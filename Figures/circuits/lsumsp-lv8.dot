@@ -1,0 +1,40 @@
+digraph lsumsp_lv8 {
+  rankdir=LR;
+  node [shape=Mrecord];
+  bgcolor=transparent;
+  nslimit=20;
+  ranksep="0.5";
+  c1 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c2 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c3 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c4 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c5 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c6 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c7 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c9 [label="{In|{<Out0>|<Out1>|<Out2>|<Out3>|<Out4>|<Out5>|<Out6>|<Out7>}}"];
+  c10 [label="{{<In0>|<In1>|<In2>|<In3>|<In4>|<In5>|<In6>|<In7>}|Out}"];
+  c9:Out0 -> c1:In0 [];
+  c9:Out1 -> c1:In1 [];
+  c1:Out0 -> c2:In0 [];
+  c9:Out2 -> c2:In1 [];
+  c2:Out0 -> c3:In0 [];
+  c9:Out3 -> c3:In1 [];
+  c3:Out0 -> c4:In0 [];
+  c9:Out4 -> c4:In1 [];
+  c4:Out0 -> c5:In0 [];
+  c9:Out5 -> c5:In1 [];
+  c5:Out0 -> c6:In0 [];
+  c9:Out6 -> c6:In1 [];
+  c6:Out0 -> c7:In0 [];
+  c9:Out7 -> c7:In1 [];
+  c9:Out0 -> c10:In0 [];
+  c1:Out0 -> c10:In1 [];
+  c2:Out0 -> c10:In2 [];
+  c3:Out0 -> c10:In3 [];
+  c4:Out0 -> c10:In4 [];
+  c5:Out0 -> c10:In5 [];
+  c6:Out0 -> c10:In6 [];
+  c7:Out0 -> c10:In7 [];
+}
+
+// lsumsp-lv8 components: 7 +. Max depth: 7.
