@@ -1,0 +1,19 @@
+digraph lsums_bushp2 {
+  margin=0;
+  rankdir=LR;
+  node [shape=Mrecord];
+  bgcolor=transparent;
+  nslimit=20;
+  ranksep="0.75";
+  c1 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c2 [label="{0|{<Out0>}}"];
+  c3 [label="{In|{<Out0>|<Out1>}}"];
+  c4 [label="{{<In0>|<In1>|<In2>}|Out}"];
+  c3:Out0 -> c1:In0 [];
+  c3:Out1 -> c1:In1 [];
+  c2:Out0 -> c4:In0 [];
+  c3:Out0 -> c4:In1 [];
+  c1:Out0 -> c4:In2 [];
+}
+
+// lsums-bushp2 components: 1 +, 1 0, 2 total. Max depth: 1.

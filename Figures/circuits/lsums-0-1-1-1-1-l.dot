@@ -1,0 +1,27 @@
+digraph lsums_0_1_1_1_1_l {
+  margin=0;
+  rankdir=LR;
+  node [shape=Mrecord];
+  bgcolor=transparent;
+  nslimit=20;
+  ranksep="0.75";
+  c1 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c2 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c3 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c4 [label="{0|{<Out0>}}"];
+  c5 [label="{In|{<Out0>|<Out1>|<Out2>|<Out3>}}"];
+  c6 [label="{{<In0>|<In1>|<In2>|<In3>|<In4>}|Out}"];
+  c5:Out0 -> c1:In0 [];
+  c5:Out1 -> c1:In1 [];
+  c1:Out0 -> c2:In0 [];
+  c5:Out2 -> c2:In1 [];
+  c2:Out0 -> c3:In0 [];
+  c5:Out3 -> c3:In1 [];
+  c4:Out0 -> c6:In0 [];
+  c5:Out0 -> c6:In1 [];
+  c1:Out0 -> c6:In2 [];
+  c2:Out0 -> c6:In3 [];
+  c3:Out0 -> c6:In4 [];
+}
+
+// lsums-0-1-1-1-1-l components: 3 +, 1 0, 4 total. Max depth: 3.

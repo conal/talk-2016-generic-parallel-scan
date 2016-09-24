@@ -30,6 +30,7 @@
 \usepackage{setspace}
 \usepackage{enumerate}
 \usepackage{tikzsymbols}
+\usepackage{fancybox}
 
 \usepackage[absolute,overlay]{textpos}  % ,showboxes
 
@@ -118,18 +119,13 @@ Linear \emph{dependency chain} thwarts parallelism (depth $<$ work).
 
 \circuit{Divide and conquer \emph{with correction}}{0}{lsumsp-p-lv8}{22}{8}
 
-\circuit{$5+11$}{3}{lsumsp-lv5xlv11}{25}{11}
-
+\circuit{$5+11$}{1}{lsumsp-lv5xlv11}{25}{11}
 \circuit{$(5+5)+6$}{0}{lsumsp-lv5-5-6-l}{24}{6}
-
 \circuit{$5+(5+6)$}{-1}{lsumsp-lv5-5-6-r}{30}{7}
-
 \circuit{$8+8$}{0}{lsumsp-p-lv8}{22}{8}
 
 \circuit{$2 \times 8$}{0}{lsumsp-p-lv8}{22}{8}
-
 \circuit{$8 \times 2$}{0}{lsumsp-lv8-p}{22}{8}
-
 \circuit{$4 \times 4$}{0}{lsumsp-lv4olv4}{24}{6}
 
 \circuit{$4^2$}{0}{lsumsp-lv4olv4}{24}{6}
@@ -146,7 +142,7 @@ Linear \emph{dependency chain} thwarts parallelism (depth $<$ work).
 \texttt{GHC.Generics}:
 \begin{code}
 data     V1         a                        -- lifted Void
-newtype  K1 i c     a = K1 c                 -- constant
+newtype  U1         a = U1                   -- lifted ()
 newtype  Par1       a = Par1 a               -- identity
 data     (f :+: g)  a = L1 (f a) | R1 (g a)  -- lifted Either
 data     (f :*: g)  a = f a :*: g a          -- lifted (,)
@@ -154,12 +150,15 @@ newtype  (f :.: g)  a = Comp1 (f (g a))      -- composition
 \end{code}
 
 \pause
-\
+\vspace{1ex}
 
-Define parallel scan for each.
+Plan:
 
-Applied automatically to data types with |Generic1| instances.
-
+\begin{itemize}
+\item Define parallel scan for each.
+\item Use directly, \emph{or}
+\item automatically via (derived) |Generic1| instances.
+\end{itemize}
 }
 
 \framet{Parallel scan as a class}{
@@ -180,15 +179,11 @@ class LScan f where
 \framet{Easy instances}{
 
 \begin{code}
-instance LScan V1 where lscan = \ SPC case
-\end{code}
+instance LScan V1    where lscan = \ SPC case
 
-\pause
-\begin{code}
-instance LScan U1        where lscan = id
-instance LScan (K1 i c)  where lscan = id
+instance LScan U1    where lscan = id
 
-instance LScan Par1      where lscan = id
+instance LScan Par1  where lscan = id
 \end{code}
 
 \pause
@@ -206,14 +201,14 @@ instance (LScan f, LScan g, Functor g) => LScan (f :*: g) where
   lscan (fa :*: ga) = fa' :*: ga'
    where
      fa' =                                lscan fa
-     ga' = (last' fa' `mappend` NOP) <$>  lscan ga
+     ga' = (last' fa' `mappend` NOP) <#>  lscan ga
 
 last' :: f a -> a
 last' = ...
 \end{code}
 
 \pause\vspace{3ex}
-\textcolor{red}{Oops.}
+\emph{Oops.}
 Not all data structures have a last element.
 }
 
@@ -228,7 +223,10 @@ class LScan f where
   lscan = firstAnd1 to1 . lscan . from1
 \end{code}
 
-\pause\vspace{4ex}
+\pause\vspace{2ex}
+% \hrule
+\vspace{2ex}
+
 \begin{code}
 type And1 f = f :*: Par1
 
@@ -243,15 +241,11 @@ firstAnd1 q (fa :> a) = q fa :> a
 \framet{Easy instances, again}{
 
 \begin{code}
-instance LScan V1 where lscan = \ SPC case
-\end{code}
+instance LScan V1    where lscan = \ SPC case
 
-\pause
-\begin{code}
-instance LScan U1        where lscan = id
-instance LScan (K1 i c)  where lscan = id
+instance LScan U1    where lscan = (NOP :> mempty)
 
-instance LScan Par1      where lscan = id
+instance LScan Par1  where lscan (Par1 a) = Par1 mempty :> a
 \end{code}
 
 \pause
@@ -261,5 +255,226 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
   lscan (R1  ga  ) = R1  (lscan ga  )
 \end{code}
 }
+
+\framet{Products}{
+\begin{code}
+instance (LScan f, LScan g, Functor g) => LScan (f :*: g) where
+  lscan (fa :*: ga) = (fa' :*: ga') :> gx
+   where
+     fa'  :>  fx  =                 lscan fa
+     ga'  :>  gx  = adjustl fx <#>  lscan ga
+
+SPC
+
+adjustl :: (Monoid a, Functor t) => a -> t a -> t a
+adjustl a as = (a <> NOP) <#> as
+\end{code}
+}
+
+%% \nc\cbox[1]{\raisebox{-0.5\height}{\fbox{#1}}}
+\nc\cpic[2]{\fbox{\wpicture{#1}{circuits/#2}}}
+\nc\ccap[3]{
+\begin{minipage}[c]{0.48\textwidth}
+\begin{center}
+\cpic{#2}{#3}\par\vspace{0.5ex}#1\par
+\end{center}
+\end{minipage}
+}
+
+\framet{Some simple scans}{
+\setlength{\fboxsep}{0.75ex}
+\setlength{\fboxrule}{0.15pt}
+\setlength{\shadowsize}{2pt}
+\vspace{-1ex}
+\begin{center}
+\ccap{|U1|}{1.2in}{lsums-u}
+\ccap{|Par1|}{1in}{lsums-i}
+\end{center}
+\begin{center}
+\ccap{|Par1 :*: U1|}{1.4in}{lsums-1-0-no-hash-no-opt}
+\ccap{|Par1 :*: U1| (optimized)}{1in}{lsums-1-0}
+\end{center}
+\begin{center}
+\ccap{|Par1 :*: (Par1 :*: U1)|}{1.5in}{lsums-1-1-0-no-hash-no-opt}
+\ccap{|Par1 :*: (Par1 :*: U1)| (optimized)}{1.3in}{lsums-1-1-0}
+\end{center}
+
+}
+
+\framet{|Par1 :*: (Par1 :*: (Par1 :*: (Par1 :*: U1)))| (unoptimized)}{
+\vspace{0ex}
+\wfig{4.5in}{circuits/lsums-1-1-1-1-0-r-no-hash-no-opt}
+}
+\circuit{$1+(1+(1+(1+0)))$ (unoptimized)}{0}{lsums-1-1-1-1-0-r-no-hash-no-opt}{10}{4}
+\circuit{$1+(1+(1+(1+0)))$ (optimized)}{0}{lsums-1-1-1-1-0-r}{6}{3}
+
+\circuit{$(((0+1)+1)+1)+1$ (unoptimized)}{1}{lsums-0-1-1-1-1-l-no-hash-no-opt}{8}{4}
+\circuit{$(((0+1)+1)+1)+1$ (optimized)}{1}{lsums-0-1-1-1-1-l}{3}{3}
+
+\framet{Vector GADT}{
+\begin{code}
+data Vec NOP :: Nat -> * -> * SPC where
+  ZVec  :: Vec Z a 
+  (:<)  :: a -> Vec n a -> Vec (S n) a
+
+instance                   LScan (Vec Z)
+instance LScan (Vec n) =>  LScan (Vec (S n))
+\end{code}
+\pause\vspace{-4ex}
+\begin{code}
+instance Generic1 (Vec Z) where
+  type Rep1 (Vec Z) = U1
+  from1 ZVec = U1
+  to1 U1 = ZVec
+
+instance Generic1 (Vec (S n)) where
+  type Rep1 (Vec (S n)) = Par1 :*: Vec n
+  from1 (a :< as) = Par1 a :*: as
+  to1 (Par1 a :*: as) = a :< as
+
+\end{code}
+
+Plus |Functor|, |Applicative|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
+}
+
+\framet{Vector type family}{
+\begin{code}
+type family Vec_n where
+  Vec Z      = U1
+  Vec (S n)  = Par1 :*: Vec n
+\end{code}
+}
+
+\circuit{|Vec N8| (unoptimized)}{-1}{lsums-rv8-no-hash-no-opt}{36}{8}
+\circuit{|Vec N8| (optimized)}{-1}{lsums-rv8}{28}{7}
+
+\framet{Vector type families}{
+
+Right-associated:
+\begin{code}
+type family RVec_n where
+  RVec Z      = U1
+  RVec (S n)  = Par1 :*: RVec n
+\end{code}
+
+\pause\vspace{3ex}
+
+Left-associated:
+\begin{code}
+type family LVec_n where
+  LVec Z      = U1
+  LVec (S n)  = LVec n :*: Par1
+\end{code}
+
+\pause\vspace{2ex}
+
+Also convenient:
+\begin{code}
+type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
+\end{code}
+}
+
+\circuit{|RVec N8| (unoptimized)}{-1}{lsums-rv8-no-hash-no-opt}{36}{8}
+\circuit{|RVec N8| (optimized)}{-1}{lsums-rv8}{28}{7}
+
+\circuit{|LVec N8| (unoptimized)}{1}{lsums-lv8-no-hash-no-opt}{16}{8}
+\circuit{|LVec N8| (optimized)}{-1}{lsums-lv8}{7}{7}
+
+\circuit{$8$}{-1}{lsums-lv8}{7}{7}
+
+\circuit{$(5+11)$ (unoptimized)}{1}{lsums-lv5xlv11-no-hash-no-opt}{25}{11}
+\circuit{$(5+11)$ (optimized)}{1}{lsums-lv5xlv11}{25}{11}
+
+\circuit{$(5+5)+6$}{0}{lsums-lv5-5-6-l}{24}{6}
+\circuit{$5+(5+6)$}{-1}{lsums-lv5-5-6-r}{30}{7}
+\circuit{$8+8$}{0}{lsums-p-lv8}{22}{8}
+\circuit{$2 \times 8$}{0}{lsums-p-lv8}{22}{8}
+
+\framet{Composition}{
+\vspace{3ex}
+\begin{code}
+instance          (LScan g, LScan f, Functor f, Zip g)
+  SPACE SPACE =>  LScan (g :.: f) where
+  lscan (Comp1 gfa) = Comp1 (zipWith adjustl tots' gfa') :> tot
+   where
+     (gfa', tots)  = unzipAnd1 (lscan <#> gfa)
+     tots' :> tot  = lscan tots
+\end{code} % 
+
+\vspace{3ex}
+
+\begin{code}
+unzipAnd1 :: forall g f a. Functor g => g (And1 f a) -> g (f a) :* g a
+unzipAnd1 = unzip . fmap (\ (as :> a) -> (as,a))
+
+unzip :: Functor f => f (a, b) -> (f a, f b)
+unzip ps = (fst <#> ps, snd <#> ps)
+\end{code}
+}
+
+\circuit{|Pair :.: LVec N8|}{0}{lsums-p-lv8}{22}{8}
+\circuit{$2 \times 8$}{0}{lsums-p-lv8}{22}{8}
+\circuit{$8 \times 2$}{0}{lsums-lv8-p}{22}{8}
+\circuit{$4 \times 4$}{0}{lsums-lv4olv4}{24}{6}
+\circuit{$4^2$}{0}{lsums-lv4olv4}{24}{6}
+
+\framet{Exponentiation GADTs}{
+
+Right-associated/top-down:
+
+> type family RPow h n where
+>   RPow h Z      = Par1
+>   RPow h (S n)  = h :.: RPow h n
+
+{}
+
+Left-associated/bottom-up:
+
+> type family LPow h n where
+>   LPow h Z      = Par1
+>   LPow h (S n)  = LPow h n :.: h
+
+}
+
+\circuit{|LPow (LVec N4) N2|}{0}{lsums-lpow-4-2}{24}{6}
+\circuit{$4^2$}{0}{lsums-lpow-4-2}{24}{6}
+
+\circuit{|LPow Pair N4|}{-1}{lsums-lb4}{26}{6}
+\circuit{$\overleftarrow{2^4} = ((2 \times 2) \times 2) \times 2$}{-1}{lsums-lb4}{26}{6}
+
+\circuit{|RPow Pair N4|}{-1}{lsums-rb4}{32}{4}
+\circuit{$\overrightarrow{2^4} = 2 \times (2 \times (2 \times 2))$}{-1}{lsums-rb4}{32}{4}
+
+\circuit{$2^4 = (2^2)^2 = (2 \times 2) \times (2 \times 2)$}{-1}{lsums-bush2}{29}{5}
+
+\framet{Bushes}{
+\vspace{5ex}
+
+> type family Bush n where
+>   Bush Z      = Pair
+>   Bush (S n)  = Bush n :.: Bush n
+
+\vspace{3ex}\pause
+
+Notes:
+\begin{itemize}
+\item
+Composition-balanced counterpart to |LPow| and |RPow|.
+\item
+Variation of |Bush| type in \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.184.8120}{\emph{Nested Datatypes}} by Bird \& Meertens.
+\item
+Size $2^{2^n}$, i.e., $2, 4, 16, 256, 65536, \ldots$.
+\item
+Easily generalizes beyond pairing and squaring.
+\end{itemize}
+}
+
+%% \circuit{|Bush N2|}{-1}{lsums-bush2}{29}{5}
+
+\circuit{|Bush N1|}{0}{lsums-bush1}{4}{2}
+\circuit{$2^{2^1}$}{0}{lsums-bush1}{4}{2}
+\circuit{$2^{2^2}$}{0}{lsums-bush2}{29}{5}
+\circuit{$2^{2^3}$}{0}{lsums-bush3}{718}{10}
+
 
 \end{document}

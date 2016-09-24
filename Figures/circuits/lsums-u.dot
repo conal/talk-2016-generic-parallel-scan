@@ -1,0 +1,13 @@
+digraph lsums_u {
+  margin=0;
+  rankdir=LR;
+  node [shape=Mrecord];
+  bgcolor=transparent;
+  nslimit=20;
+  ranksep="0.75";
+  c1 [label="{0|{<Out0>}}"];
+  c3 [label="{{<In0>}|Out}"];
+  c1:Out0 -> c3:In0 [];
+}
+
+// No components.
