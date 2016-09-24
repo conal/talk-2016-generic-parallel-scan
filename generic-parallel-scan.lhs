@@ -87,28 +87,6 @@
 
 \frame{\titlepage}
 
-\definecolor{statColor}{rgb}{0.5,0,0}
-
-% To remove
-
-\newcommand{\hstats}[2]{
-\begin{textblock}{100}[1,0](348,13)
-{\small \textcolor{statColor}{work: #1, depth: #2}}
-\end{textblock}
-}
-
-\newcommand{\stats}[2]{
-{\small \textcolor{statColor}{work: #1, depth: #2}}}
-
-\newcommand\circuit[3]{
-\wfig{4.5in}{circuits/#1}
-\vspace{-4ex}
-\begin{center}
-\stats{#2}{#3}
-\end{center}
-}
-
-
 \framet{Prefix sum (left scan)}{
 \wfig{4.5in}{circuits/lsumsp-lv8}
 
@@ -123,65 +101,165 @@
 Linear \emph{dependency chain} thwarts parallelism (depth $<$ work).
 }
 
-\framet{Prefix sum (left scan)}{\hstats{15}{15}
+\definecolor{statColor}{rgb}{0,0.5,0}
 
-\circuit{lsumsp-lv16}{15}{15}
+\newcommand{\stats}[2]{
+{\small \textcolor{statColor}{work: #1, depth: #2}}}
+
+\newcommand\circuit[5]{
+\framet{#1 \hfill \stats {#4}{#5}\hspace{2ex}}{
+\vspace{#2ex}
+\wfig{4.5in}{circuits/#3}
+}}
+
+\circuit{Prefix sum (left scan)}{0}{lsumsp-lv16}{15}{15}
+
+\circuit{Divide and conquer?}{3}{lsumsp-lv8-and-lv8}{14}{7}
+
+\circuit{Divide and conquer \emph{with correction}}{0}{lsumsp-p-lv8}{22}{8}
+
+\circuit{$5+11$}{3}{lsumsp-lv5xlv11}{25}{11}
+
+\circuit{$(5+5)+6$}{0}{lsumsp-lv5-5-6-l}{24}{6}
+
+\circuit{$5+(5+6)$}{-1}{lsumsp-lv5-5-6-r}{30}{7}
+
+\circuit{$8+8$}{0}{lsumsp-p-lv8}{22}{8}
+
+\circuit{$2 \times 8$}{0}{lsumsp-p-lv8}{22}{8}
+
+\circuit{$8 \times 2$}{0}{lsumsp-lv8-p}{22}{8}
+
+\circuit{$4 \times 4$}{0}{lsumsp-lv4olv4}{24}{6}
+
+\circuit{$4^2$}{0}{lsumsp-lv4olv4}{24}{6}
+
+\circuit{$2^4 = ((2 \times 2) \times 2) \times 2$}{-1}{lsumsp-lb4}{26}{6}
+
+\circuit{$2^4 = 2 \times (2 \times (2 \times 2))$}{-1}{lsumsp-rb4}{32}{4}
+
+\circuit{$2^4 = (2^2)^2 = (2 \times 2) \times (2 \times 2)$}{-1}{lsumsp-bush2}{29}{5}
+
+\framet{Generic programming}{
+%\pause
+
+\texttt{GHC.Generics}:
+\begin{code}
+data     V1         a                        -- lifted Void
+newtype  K1 i c     a = K1 c                 -- constant
+newtype  Par1       a = Par1 a               -- identity
+data     (f :+: g)  a = L1 (f a) | R1 (g a)  -- lifted Either
+data     (f :*: g)  a = f a :*: g a          -- lifted (,)
+newtype  (f :.: g)  a = Comp1 (f (g a))      -- composition
+\end{code}
+
+\pause
+\
+
+Define parallel scan for each.
+
+Applied automatically to data types with |Generic1| instances.
+
 }
 
-\framet{Divide and conquer?}{
+\framet{Parallel scan as a class}{
+\begin{code}
+class LScan f where
+  lscan :: Monoid a => f a -> f a
+\end{code}
+ 
+\pause
+\vspace{-3ex}
+\begin{code}
+  SPACE  default lscan  ::  (Generic1 f, LScan (Rep1 f))
+                        =>  Monoid a => f a -> f a
+         lscan = to1 . lscan . from1
+\end{code}
+}
+
+\framet{Easy instances}{
+
+\begin{code}
+instance LScan V1 where lscan = \ SPC case
+\end{code}
+
+\pause
+\begin{code}
+instance LScan U1        where lscan = id
+instance LScan (K1 i c)  where lscan = id
+
+instance LScan Par1      where lscan = id
+\end{code}
+
+\pause
+\begin{code}
+instance (LScan f, LScan g) => LScan (f :+: g) where
+  lscan (L1  fa  ) = L1  (lscan fa  )
+  lscan (R1  ga  ) = R1  (lscan ga  )
+\end{code}
+}
+
+\framet{Products}{
 \vspace{3ex}
-\circuit{lsumsp-lv8-and-lv8}{14}{7}
+\begin{code}
+instance (LScan f, LScan g, Functor g) => LScan (f :*: g) where
+  lscan (fa :*: ga) = fa' :*: ga'
+   where
+     fa' =                                lscan fa
+     ga' = (last' fa' `mappend` NOP) <$>  lscan ga
+
+last' :: f a -> a
+last' = ...
+\end{code}
+
+\pause\vspace{3ex}
+\textcolor{red}{Oops.}
+Not all data structures have a last element.
 }
 
-\framet{Divide and conquer \emph{with correction}}{
-\circuit{lsumsp-p-lv8}{22}{8}
-}
-
-\framet{$5+11$}{
+\framet{Starting with zero}{
 \vspace{3ex}
-\circuit{lsumsp-lv5xlv11}{25}{11}
+\begin{code}
+class LScan f where
+  lscan :: Monoid a => f a -> And1 f a
+  
+  default lscan  ::  (Generic1 f, LScan (Rep1 f))
+                 =>  Monoid a => f a -> And1 f a
+  lscan = firstAnd1 to1 . lscan . from1
+\end{code}
+
+\pause\vspace{4ex}
+\begin{code}
+type And1 f = f :*: Par1
+
+pattern (:>) :: f a -> a -> And1 f a
+pattern fa :> a = fa :*: Par1 a
+
+firstAnd1 :: (f a -> g a) -> And1 f a -> And1 g a
+firstAnd1 q (fa :> a) = q fa :> a
+\end{code}
 }
 
-\framet{$(5+5)+6$}{
-\circuit{lsumsp-lv5-5-6-l}{24}{6}
-}
+\framet{Easy instances, again}{
 
-\framet{$5+(5+6)$}{
-\vspace{-1ex}
-\circuit{lsumsp-lv5-5-6-r}{30}{7}
-}
+\begin{code}
+instance LScan V1 where lscan = \ SPC case
+\end{code}
 
-\framet{$8+8$}{
-\circuit{lsumsp-p-lv8}{22}{8}
-}
+\pause
+\begin{code}
+instance LScan U1        where lscan = id
+instance LScan (K1 i c)  where lscan = id
 
-\framet{$2 \times 8$}{
-\circuit{lsumsp-p-lv8}{22}{8}
-}
+instance LScan Par1      where lscan = id
+\end{code}
 
-\framet{$8 \times 2$}{
-\circuit{lsumsp-lv8-p}{22}{8}
+\pause
+\begin{code}
+instance (LScan f, LScan g) => LScan (f :+: g) where
+  lscan (L1  fa  ) = L1  (lscan fa  )
+  lscan (R1  ga  ) = R1  (lscan ga  )
+\end{code}
 }
-
-\framet{$4 \times 4$}{
-\circuit{lsumsp-lv4olv4}{24}{6}
-}
-
-\framet{$((2 \times 2) \times 2) \times 2$}{
-\vspace{-1ex}
-\circuit{lsumsp-lb4}{24}{6}
-}
-
-\framet{$2 \times (2 \times (2 \times 2))$}{
-\vspace{-1ex}
-\circuit{lsumsp-rb4}{32}{4}
-}
-
-\framet{$(2 \times 2) \times (2 \times 2)$}{
-\vspace{-1ex}
-\circuit{lsumsp-bush2}{32}{4}
-}
-
-%% Try the textblock
 
 \end{document}
