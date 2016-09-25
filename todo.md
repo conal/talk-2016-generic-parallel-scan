@@ -18,6 +18,7 @@ subst: ["&&& △","*** ×","||| ▽","+++ +","|- ⊢","<~ ⤺","k (↝)","op (�
         If not, could they?
     *   Wide vs tall.
     *   Maybe my circuit diagrams would work fine.
+*   Move supporting code to a new Stack project under this directory.
 
 
 ## Done
