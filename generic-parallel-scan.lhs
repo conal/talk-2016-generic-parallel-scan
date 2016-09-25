@@ -115,9 +115,19 @@ Linear \emph{dependency chain} thwarts parallelism (depth $<$ work).
 
 \circuit{Prefix sum (left scan)}{0}{lsumsp-lv16}{15}{15}
 
-\circuit{Divide and conquer?}{3}{lsumsp-lv8-and-lv8}{14}{7}
+%% \circuit{Divide and conquer?}{3}{lsumsp-lv8-and-lv8}{14}{7}
 
-\circuit{Divide and conquer \emph{with correction}}{0}{lsumsp-p-lv8}{22}{8}
+\circuit{Divide and conquer?}{3}{lsumsp-lv8-lv8-unknown}{14+?}{7+?}
+
+%% \framet{Divide and conquer? \hfill \stats {14}{7}\hspace{2ex}}{
+%% \vspace{0ex}
+%% \wfig{4.5in}{circuits/lsumsp-lv8-wide}
+%% \wfig{4.5in}{circuits/lsumsp-lv8-wide}
+%% \vspace{-2ex}
+%% \emph{Then what?}
+%% }
+
+\circuit{Divide and conquer}{0}{lsumsp-p-lv8}{22}{8}
 
 \circuit{$5+11$}{1}{lsumsp-lv5xlv11}{25}{11}
 \circuit{$(5+5)+6$}{0}{lsumsp-lv5-5-6-l}{24}{6}
@@ -141,12 +151,13 @@ Linear \emph{dependency chain} thwarts parallelism (depth $<$ work).
 
 \texttt{GHC.Generics}:
 \begin{code}
-data     V1         a                        -- lifted Void
-newtype  U1         a = U1                   -- lifted ()
-newtype  Par1       a = Par1 a               -- identity
-data     (f :+: g)  a = L1 (f a) | R1 (g a)  -- lifted Either
-data     (f :*: g)  a = f a :*: g a          -- lifted (,)
-newtype  (f :.: g)  a = Comp1 (f (g a))      -- composition
+data     V1         a                        -- lifted |Void|
+newtype  U1         a = U1                   -- lifted |()|
+newtype  Par1       a = Par1 a               -- singleton
+
+data     (f :+: g)  a = L1 (f a) | R1 (g a)  -- lifted |Either|
+data     (f :*: g)  a = f a :*: g a          -- lifted |(,)|
+newtype  (g :.: f)  a = Comp1 (g (f a))      -- composition
 \end{code}
 
 \pause

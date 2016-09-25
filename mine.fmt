@@ -81,9 +81,9 @@
 %format firstAnd1
 %format unzipAnd1
 
-%format :*: = " \times "
-%format :+: = " + "
-%format :.: = "\circ"
+%format :*: = " \pmb{\times} "
+%format :+: = " \pmb{+} "
+%format :.: = " \pmb{\circ} "
 
 %format firstAnd1
 

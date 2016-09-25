@@ -8,6 +8,7 @@ subst: ["&&& △","*** ×","||| ▽","+++ +","|- ⊢","<~ ⤺","k (↝)","op (�
 *   Complexity --- Master Theorem
 *   Conclusion
 *   Statistics summary
+*   CUDA comparison
 *   Consider a picture with 2D layout for parallel scan, akin to FFT.
     *   Horizontal arrows to show the scan paths.
     *   Add a result column for the sub-totals.
