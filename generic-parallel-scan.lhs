@@ -322,7 +322,7 @@ adjustl a as = (a <> NOP) <#> as
 \circuit{$(((0+1)+1)+1)+1$ (unoptimized)}{1}{lsums-0-1-1-1-1-l-no-hash-no-opt}{8}{4}
 \circuit{$(((0+1)+1)+1)+1$ (optimized)}{1}{lsums-0-1-1-1-1-l}{3}{3}
 
-\framet{Vector GADT}{
+\framet{Vector as GADT}{
 \begin{code}
 data Vec NOP :: Nat -> * -> * SPC where
   ZVec  :: Vec Z a 
@@ -348,7 +348,7 @@ instance Generic1 (Vec (S n)) where
 Plus |Functor|, |Applicative|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
 }
 
-\framet{Vector type family}{
+\framet{Vector as type family}{
 \begin{code}
 type family Vec_n where
   Vec Z      = U1
@@ -391,7 +391,8 @@ type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
 \circuit{|LVec N8| (unoptimized)}{1}{lsums-lv8-no-hash-no-opt}{16}{8}
 \circuit{|LVec N8| (optimized)}{-1}{lsums-lv8}{7}{7}
 
-\circuit{$8$}{-1}{lsums-lv8}{7}{7}
+\circuit{$8$}{0}{lsums-lv8}{7}{7}
+\circuit{$16$}{0}{lsums-lv16}{15}{15}
 
 \circuit{$(5+11)$ (unoptimized)}{1}{lsums-lv5xlv11-no-hash-no-opt}{25}{11}
 \circuit{$(5+11)$ (optimized)}{1}{lsums-lv5xlv11}{25}{11}
@@ -429,7 +430,29 @@ unzip ps = (fst <#> ps, snd <#> ps)
 \circuit{$4 \times 4$}{0}{lsums-lv4olv4}{24}{6}
 \circuit{$4^2$}{0}{lsums-lv4olv4}{24}{6}
 
-\framet{Exponentiation GADTs}{
+\framet{Exponentiation as GADTs}{
+
+Top-down, depth-typed, perfect, leaf trees
+\begin{code}
+data RPow :: (* -> *) -> Nat -> * -> * NOP where
+  L :: a               -> RPow h Z      a
+  B :: h (RPow h n a)  -> RPow h (S n)  a
+\end{code}
+
+\pause\vspace{3ex}
+
+Bottom-up, depth-typed, perfect, leaf trees:
+\begin{code}
+data LPow :: (* -> *) -> Nat -> * -> * NOP where
+  L  :: a               -> LPow h Z      a
+  B  :: LPow h n (h a)  -> LPow h (S n)  a
+\end{code}
+
+Plus |Generic1|, |Functor|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
+
+}
+
+\framet{Exponentiation as type families}{
 
 Right-associated/top-down:
 
