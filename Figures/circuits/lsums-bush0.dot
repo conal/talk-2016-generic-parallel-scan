@@ -1,0 +1,19 @@
+digraph lsums_bush0 {
+  margin=0;
+  rankdir=LR;
+  node [shape=Mrecord];
+  bgcolor=transparent;
+  nslimit=20;
+  ranksep="0.75";
+  c0 [label="{{<In0>|<In1>}|+|{<Out0>}}"];
+  c1 [label="{0|{<Out0>}}"];
+  c2 [label="{In|{<Out0>|<Out1>}}"];
+  c3 [label="{{<In0>|<In1>|<In2>}|Out}"];
+  c2:Out0 -> c0:In0 [];
+  c2:Out1 -> c0:In1 [];
+  c1:Out0 -> c3:In0 [];
+  c2:Out0 -> c3:In1 [];
+  c0:Out0 -> c3:In2 [];
+}
+
+// lsums-bush0 components: 1 +, 1 0, 2 total. Max depth: 1.

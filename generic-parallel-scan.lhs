@@ -7,6 +7,8 @@
 \documentclass{beamer} % default aspect ratio 4:3
 % \documentclass[handout]{beamer}
 
+% \setbeameroption{show notes} % un-comment to see the notes
+
 \usefonttheme{serif}
 \usepackage{framed}
 
@@ -57,11 +59,15 @@
 \newcommand{\stats}[2]{
 {\small \textcolor{statColor}{work: #1, depth: #2}}}
 
-\newcommand\circuit[5]{
-\framet{#1 \hfill \stats {#4}{#5}\hspace{2ex}}{
+\newcommand\ccircuit[3]{
+\framet{#1}{
 \vspace{#2ex}
 \wfig{4.5in}{circuits/#3}
 }}
+
+\newcommand\circuit[5]{
+\ccircuit{#1 \hfill \stats {#4}{#5}\hspace{2ex}}{#2}{#3}
+}
 
 \title{Generic parallel scan}
 \author{\href{http://conal.net}{Conal Elliott}}
@@ -75,25 +81,22 @@
 \setlength\mathindent{4ex}
 % \setstretch{1.2} % ??
 
-\nc\bboxed[1]{\boxed{\rule[-0.9ex]{0pt}{2.8ex}#1}}
-\nc\vox[1]{\bboxed{#1}}
-\nc\tvox[2]{\vox{#1}\vox{#2}}
-
-\nc\lscan{\Varid{lscan}}
-
-\nc\trans[1]{\\[1.3ex] #1 \\[0.75ex]}
-\nc\ptrans[1]{\pause\trans{#1}}
-\nc\ptransp[1]{\ptrans{#1}\pause}
-
-\nc\pitem{\pause \item}
-
-%%%%
-
-% \setbeameroption{show notes} % un-comment to see the notes
-
 \graphicspath{{Figures/}}
 
 \definecolor{shadecolor}{rgb}{0.95,0.95,0.95}
+\setlength{\fboxsep}{0.75ex}
+\setlength{\fboxrule}{0.15pt}
+\setlength{\shadowsize}{2pt}
+
+%% \nc\cbox[1]{\raisebox{-0.5\height}{\fbox{#1}}}
+\nc\cpic[2]{\fbox{\wpicture{#1}{circuits/#2}}}
+\nc\ccap[3]{
+\begin{minipage}[c]{0.48\textwidth}
+\begin{center}
+\cpic{#2}{#3}\par\vspace{0.5ex}#1\par
+\end{center}
+\end{minipage}
+}
 
 \begin{document}
 
@@ -106,31 +109,18 @@ Given $a_1,\ldots,a_n$, compute
 $$ {\Large b_k = \sum\limits_{1 \le i < k}{a_i}}\qquad\text{for~} k=1,\ldots, n+1$$
 \vspace{3ex}
 
-in minimal work and depth (ideal parallel time).
+efficiently in work and depth (ideal parallel time).
 
 \vspace{5ex}
 
 Note that $a_k$ does \emph{not} influence $b_k$.
 }
 
-\framet{Prefix sum (left scan)}{
-\wfig{4.5in}{circuits/lsumsp-lv8}
-
-\vspace{1ex} \pause
-\emph{Work:} $O(n)$
-
-\pause
-\emph{Depth}: $O(n)$ (ideal parallel ``time'')
-
-\vspace{2ex}
-\pause
-Linear \emph{dependency chain} thwarts parallelism (depth $<$ work).
-}
-
 \framet{Linear left scan}{
+\vspace{-2ex}
 \wfig{4.5in}{circuits/lsums-lv8}
 
-\vspace{1ex} \pause
+\vspace{-1ex} \pause
 \emph{Work:} $O(n)$
 
 \pause
@@ -161,7 +151,7 @@ lscan == swap . mapAccumL (\ tot a -> (tot <> a,tot)) mempty
 }
 
 \framet{Generic programming}{
-
+\vspace{2ex}
 \texttt{GHC.Generics}:
 \begin{code}
 data     V1           a                        -- lifted |Void|
@@ -220,7 +210,14 @@ instance LScan U1    where lscan = (NOP :> mempty)
 
 instance LScan Par1  where lscan (Par1 a) = Par1 mempty :> a
 \end{code}
-
+%if False
+\vspace{-6ex}
+\begin{center}
+\ccap{|U1|}{1.2in}{lsums-u}
+\ccap{|Par1|}{1in}{lsums-i}
+\end{center}
+\vspace{-3ex}
+%endif
 \pause
 \begin{code}
 instance (LScan f, LScan g) => LScan (f :+: g) where
@@ -229,9 +226,25 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
 \end{code}
 }
 
-\circuit{Linear example}{0}{lsums-lv16}{15}{15}
+%% \circuit{Linear example}{0}{lsums-lv16}{15}{15}
+%% \circuit{Products: $a^{m+n} = a^m \times a^n$}{0}{lsums-lv16}{15}{15}
 
+%if True
+%% $a^{16} = a^5 \times a^{11}$
+\framet{Product example: |Vec N5 :*: Vec N11|}{
+\vspace{-2ex}
+\wfig{2.3in}{circuits/lsums-lv5}
+\vspace{-5ex}
+\wfig{4.5in}{circuits/lsums-lv11}
 
+\emph{Then what?}
+}
+
+\ccircuit{Combine?}{0}{lsums-lv5-lv11-unknown-no-hash}
+
+\ccircuit{Right bump}{0}{lsums-lv5xlv11}
+
+%else
 \framet{Divide and conquer? \hfill \stats {14}{7}\hspace{2ex}}{
 \vspace{-2ex}
 \wfig{4.5in}{circuits/lsums-lv8-wide}
@@ -242,23 +255,8 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
 }
 
 \circuit{Divide and conquer?}{0}{lsums-lv8-lv8-unknown-no-hash}{14+?}{7+?}
-
 \circuit{Divide and conquer}{0}{lsums-p-lv8}{22}{8}
-
-
-%if False
-\framet{Divide and conquer?}{
-\vspace{-2ex}
-\wfig{2.2in}{circuits/lsums-lv5}
-\vspace{-5ex}
-\wfig{4.5in}{circuits/lsums-lv11}
-
-\emph{Then what?}
-}
-
-\circuit{Divide and conquer?}{0}{lsums-lv5-lv11-unknown-no-hash}{14+?}{7+?}
 %endif
-\circuit{Divide and conquer --- unequal}{0}{lsums-lv5xlv11}{25}{11}
 
 \framet{Products}{
 \begin{code}
@@ -275,67 +273,26 @@ adjustl a as = (a <> NOP) <#> as
 \end{code}
 }
 
-%% \nc\cbox[1]{\raisebox{-0.5\height}{\fbox{#1}}}
-\nc\cpic[2]{\fbox{\wpicture{#1}{circuits/#2}}}
-\nc\ccap[3]{
-\begin{minipage}[c]{0.48\textwidth}
-\begin{center}
-\cpic{#2}{#3}\par\vspace{0.5ex}#1\par
-\end{center}
-\end{minipage}
-}
-
-\framet{Some simple scans}{
-\setlength{\fboxsep}{0.75ex}
-\setlength{\fboxrule}{0.15pt}
-\setlength{\shadowsize}{2pt}
-\vspace{-1ex}
-\begin{center}
-\ccap{|U1|}{1.2in}{lsums-u}
-\ccap{|Par1|}{1in}{lsums-i}
-\end{center}
-\pause
-\begin{center}
-\ccap{|Par1 :*: U1|}{1.4in}{lsums-1-0-no-hash-no-opt}
-\ccap{|Par1 :*: U1| (optimized)}{1in}{lsums-1-0}
-\end{center}
-\pause
-\begin{center}
-\ccap{|Par1 :*: (Par1 :*: U1)|}{1.5in}{lsums-1-1-0-no-hash-no-opt}
-\ccap{|Par1 :*: (Par1 :*: U1)| (optimized)}{1.3in}{lsums-1-1-0}
-\end{center}
-
-}
-
-\framet{|Par1 :*: (Par1 :*: (Par1 :*: (Par1 :*: U1)))| (unoptimized)}{
-\vspace{0ex}
-\wfig{4.5in}{circuits/lsums-1-1-1-1-0-r-no-hash-no-opt}
-}
-\circuit{$1+(1+(1+(1+0)))$ (unoptimized)}{0}{lsums-1-1-1-1-0-r-no-hash-no-opt}{10}{4}
-\circuit{$1+(1+(1+(1+0)))$ (optimized)}{0}{lsums-1-1-1-1-0-r}{6}{3}
-
-\circuit{$(((0+1)+1)+1)+1$ (unoptimized)}{1}{lsums-0-1-1-1-1-l-no-hash-no-opt}{8}{4}
-\circuit{$(((0+1)+1)+1)+1$ (optimized)}{1}{lsums-0-1-1-1-1-l}{3}{3}
-
-
-\framet{Vector GADT}{
+\framet{Vector GADT}{\pause
 \begin{code}
-data LVec NOP :: Nat -> * -> * SPC where
-  ZVec  :: LVec Z a 
-  (:<)  :: a -> LVec n a -> LVec (S n) a
-
-instance                    LScan (LVec Z)
-instance LScan (LVec n) =>  LScan (LVec (S n))
+data RVec NOP :: Nat -> * -> * SPC where
+  ZVec  :: RVec Z a 
+  (:<)  :: a -> RVec n a -> RVec (S n) a
 \end{code}
 \pause\vspace{-4ex}
 \begin{code}
-instance Generic1 (LVec Z) where
-  type Rep1 (LVec Z) = U1
+instance                    LScan (RVec Z)
+instance LScan (RVec n) =>  LScan (RVec (S n))
+\end{code}
+\pause\vspace{-4ex}
+\begin{code}
+instance Generic1 (RVec Z) where
+  type Rep1 (RVec Z) = U1
   from1 ZVec = U1
   to1 U1 = ZVec
 
-instance Generic1 (LVec (S n)) where
-  type Rep1 (LVec (S n)) = Par1 :*: LVec n
+instance Generic1 (RVec (S n)) where
+  type Rep1 (RVec (S n)) = Par1 :*: RVec n
   from1 (a :< as) = Par1 a :*: as
   to1 (Par1 a :*: as) = a :< as
 
@@ -376,18 +333,34 @@ type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
 \circuit{|LVec N8| (unoptimized)}{0}{lsums-lv8-no-hash-no-opt}{16}{8}
 \circuit{|LVec N8| (optimized)}{0}{lsums-lv8}{7}{7}
 
-\circuit{$8$}{0}{lsums-lv8}{7}{7}
-\circuit{$16$}{0}{lsums-lv16}{15}{15}
-
+\circuit{|LVec N5 :*: LVec N11|}{0}{lsums-lv5xlv11}{25}{11}
+\circuit{$5+11$}{0}{lsums-lv5xlv11}{25}{11}
+\circuit{$11+5$}{0}{lsums-lv11xlv5}{19}{11}
+\circuit{$8+8$}{0}{lsums-p-lv8}{22}{8}
 \circuit{$(5+5)+6$}{0}{lsums-lv5-5-6-l}{24}{6}
 \circuit{$5+(5+6)$}{-1}{lsums-lv5-5-6-r}{30}{7}
 
+\framet{Composition example: |LVec N3 :.: LVec N4|}{
+\vspace{-3ex}
+\wfig{2.5in}{circuits/lsums-lv4}
+\vspace{-5ex}
+\wfig{2.5in}{circuits/lsums-lv4}
+\vspace{-5ex}
+\wfig{2.5in}{circuits/lsums-lv4}
+\vspace{-5ex}
+\emph{Then what?}
+}
 
-Working here.
-Rework intro to products, and make follow with composition.
+\ccircuit{Combine?}{-1}{lsums-lv3olv4-unknown-no-hash}
+\ccircuit{$(4+4)+4$}{0}{lsums-lv3olv4}
+\ccircuit{$3 \times 4$}{0}{lsums-lv3olv4}
+\ccircuit{|LVec N3 :.: LVec N4|}{0}{lsums-lv3olv4}
+\ccircuit{|LVec N3 :.: LVec N4|}{0}{lsums-lv3olv4-highlight}
 
-
-\circuit{Composition}{0}{lsums-lv4olv4-unknown-no-hash}{12}{4}
+\ccircuit{$(((7+7)+7)+7)+7$}{-1.5}{lsums-lv5olv7}
+%% \ccircuit{$5 \times 7$}{-1.5}{lsums-lv5olv7}
+%% \ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7}
+\ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7-highlight}
 
 \framet{Composition}{
 \pause
@@ -461,11 +434,11 @@ Left-associated/bottom-up:
 \circuit{|LPow (LVec N4) N2|}{0}{lsums-lpow-4-2}{24}{6}
 \circuit{$4^2$}{0}{lsums-lpow-4-2}{24}{6}
 
-\circuit{|LPow Pair N4|}{-1}{lsums-lb4}{26}{6}
+%% \circuit{|LPow Pair N4|}{-1}{lsums-lb4}{26}{6}
 \circuit{$\overleftarrow{2^4} = ((2 \times 2) \times 2) \times 2$}{-1}{lsums-lb4}{26}{6}
 
-\circuit{|RPow Pair N4|}{-1}{lsums-rb4}{32}{4}
 \circuit{$\overrightarrow{2^4} = 2 \times (2 \times (2 \times 2))$}{-1}{lsums-rb4}{32}{4}
+%% \circuit{|RPow Pair N4|}{-1}{lsums-rb4}{32}{4}
 
 \circuit{$2^4 = (2^2)^2 = (2 \times 2) \times (2 \times 2)$}{-1}{lsums-bush2}{29}{5}
 
@@ -493,7 +466,9 @@ Easily generalizes beyond pairing and squaring.
 
 %% \circuit{|Bush N2|}{-1}{lsums-bush2}{29}{5}
 
-\circuit{|Bush N1|}{0}{lsums-bush1}{4}{2}
+\circuit{|Bush N0|}{0}{lsums-bush0}{1}{1}
+\circuit{$2^{2^0}$}{0}{lsums-bush0}{1}{1}
+%\circuit{|Bush N1|}{0}{lsums-bush1}{4}{2}
 \circuit{$2^{2^1}$}{0}{lsums-bush1}{4}{2}
 \circuit{$2^{2^2}$}{0}{lsums-bush2}{29}{5}
 \circuit{$2^{2^3}$}{0}{lsums-bush3}{718}{10}

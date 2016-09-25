@@ -150,3 +150,69 @@ type family Vec_n where
 
 \circuit{$8+8$}{0}{lsums-p-lv8}{22}{8}
 \circuit{$2 \times 8$}{0}{lsums-p-lv8}{22}{8}
+
+%%%%
+
+\circuit{Products: $a^{m+n} = a^m \times a^n$}{0}{lsums-lv16}{15}{15}
+
+\framet{Divide and conquer? \hfill \stats {14}{7}\hspace{2ex}}{
+\vspace{-2ex}
+\wfig{4.5in}{circuits/lsums-lv8-wide}
+\vspace{-5ex}
+\wfig{4.5in}{circuits/lsums-lv8-wide}
+\vspace{-4ex}
+\emph{Then what?}
+}
+
+\circuit{Divide and conquer?}{0}{lsums-lv8-lv8-unknown-no-hash}{14+?}{7+?}
+
+\circuit{Divide and conquer}{0}{lsums-p-lv8}{22}{8}
+
+
+%if False
+\framet{Divide and conquer?}{
+\vspace{-2ex}
+\wfig{2.2in}{circuits/lsums-lv5}
+\vspace{-5ex}
+\wfig{4.5in}{circuits/lsums-lv11}
+
+\emph{Then what?}
+}
+
+\circuit{Divide and conquer?}{0}{lsums-lv5-lv11-unknown-no-hash}{14+?}{7+?}
+%endif
+\circuit{Divide and conquer --- unequal}{0}{lsums-lv5xlv11}{25}{11}
+
+
+\framet{Some simple scans}{
+\vspace{-1ex}
+\begin{center}
+\ccap{|U1|}{1.2in}{lsums-u}
+\ccap{|Par1|}{1in}{lsums-i}
+\end{center}
+\pause
+\begin{center}
+\ccap{|Par1 :*: U1|}{1.4in}{lsums-1-0-no-hash-no-opt}
+\ccap{|Par1 :*: U1| (optimized)}{1in}{lsums-1-0}
+\end{center}
+\pause
+\begin{center}
+\ccap{|Par1 :*: (Par1 :*: U1)|}{1.5in}{lsums-1-1-0-no-hash-no-opt}
+\ccap{|Par1 :*: (Par1 :*: U1)| (optimized)}{1.3in}{lsums-1-1-0}
+\end{center}
+}
+
+\framet{|Par1 :*: (Par1 :*: (Par1 :*: (Par1 :*: U1)))| (unoptimized)}{
+\vspace{0ex}
+\wfig{4.5in}{circuits/lsums-1-1-1-1-0-r-no-hash-no-opt}
+}
+\circuit{$1+(1+(1+(1+0)))$ (unoptimized)}{0}{lsums-1-1-1-1-0-r-no-hash-no-opt}{10}{4}
+\circuit{$1+(1+(1+(1+0)))$ (optimized)}{0}{lsums-1-1-1-1-0-r}{6}{3}
+
+\circuit{$(((0+1)+1)+1)+1$ (unoptimized)}{1}{lsums-0-1-1-1-1-l-no-hash-no-opt}{8}{4}
+\circuit{$(((0+1)+1)+1)+1$ (optimized)}{1}{lsums-0-1-1-1-1-l}{3}{3}
+
+
+\circuit{$8$}{0}{lsums-lv8}{7}{7}
+\circuit{$16$}{0}{lsums-lv16}{15}{15}
+\circuit{$5+(5+6)$}{-1}{lsums-lv5-5-6-r}{30}{7}

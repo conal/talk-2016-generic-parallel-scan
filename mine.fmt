@@ -118,3 +118,4 @@
 %format :> = "\mathbin{\rhd}"
 
 %format adjustl = bump
+%format =~ = " \simeq "
