@@ -151,13 +151,13 @@ Linear \emph{dependency chain} thwarts parallelism (depth $<$ work).
 
 \texttt{GHC.Generics}:
 \begin{code}
-data     V1         a                        -- lifted |Void|
-newtype  U1         a = U1                   -- lifted |()|
-newtype  Par1       a = Par1 a               -- singleton
+data     V1           a                        -- lifted |Void|
+newtype  U1           a = U1                   -- lifted |()|
+newtype  Par1         a = Par1 a               -- singleton
 
-data     (f :+: g)  a = L1 (f a) | R1 (g a)  -- lifted |Either|
-data     (f :*: g)  a = f a :*: g a          -- lifted |(,)|
-newtype  (g :.: f)  a = Comp1 (g (f a))      -- composition
+data     (f  :+:  g)  a = L1 (f a) | R1 (g a)  -- lifted |Either|
+data     (f  :*:  g)  a = f a :*: g a          -- lifted |(,)|
+newtype  (g  :.:  f)  a = Comp1 (g (f a))      -- composition
 \end{code}
 
 \pause
