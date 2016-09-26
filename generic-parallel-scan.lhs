@@ -143,7 +143,7 @@ Sums and Their Applications}}:
 \vspace{-1ex} \pause
 \emph{Work:} $O(n)$
 
-\pause
+%% \pause
 \emph{Depth}: $O(n)$ (ideal parallel ``time'')
 
 \vspace{2ex}

@@ -18,6 +18,8 @@ subst: ["&&& △","*** ×","||| ▽","+++ +","|- ⊢","<~ ⤺","k (↝)","op (�
     *   Derive each instance from the `Traversable`-based specification.
 *   Move supporting code to a new Stack project under this directory.
 
+## Or not
+
 *   Consider a picture with 2D layout for parallel scan, akin to FFT.
     *   Horizontal arrows to show the scan paths.
     *   Add a result column for the sub-totals.
@@ -27,10 +29,11 @@ subst: ["&&& △","*** ×","||| ▽","+++ +","|- ⊢","<~ ⤺","k (↝)","op (�
         If not, could they?
     *   Wide vs tall.
     *   Maybe my circuit diagrams would work fine.
-
-## Maybe don't
-
 *   A type closer to the original bush type.
+*   Consider making `adjustl`/`bump` be a function from `And1`.
+    Would the change simplify `LScan (g :.: f)`?
+    I don't think so.
+
 
 ## Done
 

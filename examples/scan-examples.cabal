@@ -1,0 +1,23 @@
+name:                scan-examples
+version:             0.1.0.0
+synopsis:            Examples for the talk
+author:              Conal Elliott
+maintainer:          conal@conal.net
+build-type:          Simple
+extra-source-files:  ChangeLog.md
+cabal-version:       >=1.10
+
+executable examples
+  main-is:             Examples.hs
+  build-depends:       base >=4.9 && <4.10, keys, pointed
+                     , shaped-types
+                     , circat, reification-rules
+  default-language:    Haskell2010
+  ghc-options:
+              -O2 -Wall
+              -fplugin=ReificationRules.Plugin
+              -dcore-lint -fexpose-all-unfoldings
+
+              -fsimpl-tick-factor=400
+
+--               -fplugin-opt=ReificationRules.Plugin:trace
