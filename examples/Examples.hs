@@ -93,7 +93,7 @@ main = do
 --   goSep "dot-lb4-1" 2 ((<.>) @(And1 (LBin N4)) @Int)
 
 --   goSep "lproducts-lb4" 2 (lproducts @(LBin N4) @Int)
-  goSep "powers-lb4" 6 (powers @(LBin N4) @Int)
+--   goSep "powers-lb4" 6 (powers @(LBin N4) @Int)
 --   goSep "powers-decoupled-lb4" 2 (lproducts . (unknown :: Unop (LBin N4 Int)) . point)
 --   goSep "evalPoly-lb4" 3 (evalPoly @(LBin N4) @Int)
 
@@ -101,7 +101,7 @@ main = do
 
 -- --   -- For revised parallel scan talk (2016-10-05)
 --   goSep "lsums-p"   0.5 (lsums @Pair @Int)
---   goSep "lsums-lv4" 1.0 (lsums @(LVec N4) @Int)
+  goSep "lsums-lv4" 1.0 (lsums @(LVec N4) @Int)
 --   goSep "lsums-rv4" 2.0 (lsums @(RVec N4) @Int) -- yipes!
 --   goSep "lsums-lv16" 0.5 (lsums @(LVec N16) @Int)
 --   goSep "lsums-lv5xlv11" 1 (lsums @(LVec N5 :*: LVec N11) @Int)

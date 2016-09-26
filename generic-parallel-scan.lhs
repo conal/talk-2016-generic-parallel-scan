@@ -72,8 +72,8 @@
 \title{Generic parallel scan}
 \author{\href{http://conal.net}{Conal Elliott}}
 \institute{Target}
-% \date{October 5, 2016}
-\date{\emph{[\today]}}
+\date{October 5, 2016}
+% \date{\emph{[\today]}}
 
 \setlength{\itemsep}{2ex}
 \setlength{\parskip}{1ex}
@@ -380,7 +380,7 @@ type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
 
 \ccircuit{$(((7+7)+7)+7)+7$}{-1.5}{lsums-lv5olv7}
 %% \ccircuit{$5 \times 7$}{-1.5}{lsums-lv5olv7}
-%% \ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7}
+\ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7}
 \ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7-highlight}
 
 \framet{Composition}{
@@ -562,14 +562,14 @@ lalls      = lscanAla All
 multiples  = lsums      . point
 powers     = lproducts  . point
 
-multiplicationTable  = multiples  <$> multiples  1
-fiddleFactors        = powers     <$> powers     omega
+multiplicationTable  = multiples  <$$> multiples  1
+fiddleFactors        = powers     <$$> powers     omega
 \end{code}
 }
 
 \circuit{|lproducts @(RPow Pair N4)|}{-1}{lproducts-rb4}{32}{4}
-\framet{|point @(RPow Pair N4)|}{\wfig{3in}{circuits/point-rb4}}
-%% \ccircuit{|point @(RPow Pair N4)|}{0}{point-rb4}
+%% \circuit{|point @(RPow Pair N4)|}{0}{point-rb4}{0}{0}
+\framet{|point @(RPow Pair N4)|}{\vspace{1ex}\wfig{3.5in}{circuits/point-rb4}}
 \circuit{|powers @(RPow Pair N4)|}{-1}{powers-rb4-no-hash}{32}{4}
 \circuit{|powers @(RPow Pair N4)| --- with CSE}{-1}{powers-rb4}{15}{4}
 
