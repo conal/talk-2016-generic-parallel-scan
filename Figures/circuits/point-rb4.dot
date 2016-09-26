@@ -1,0 +1,28 @@
+digraph point_rb4 {
+  margin=0;
+  rankdir=LR;
+  node [shape=Mrecord];
+  bgcolor=transparent;
+  nslimit=20;
+  ranksep="6.0";
+  c0 [label="{In|{<Out0>}}"];
+  c1 [label="{{<In0>|<In1>|<In2>|<In3>|<In4>|<In5>|<In6>|<In7>|<In8>|<In9>|<In10>|<In11>|<In12>|<In13>|<In14>|<In15>}|Out}"];
+  c0:Out0 -> c1:In0 [];
+  c0:Out0 -> c1:In1 [];
+  c0:Out0 -> c1:In2 [];
+  c0:Out0 -> c1:In3 [];
+  c0:Out0 -> c1:In4 [];
+  c0:Out0 -> c1:In5 [];
+  c0:Out0 -> c1:In6 [];
+  c0:Out0 -> c1:In7 [];
+  c0:Out0 -> c1:In8 [];
+  c0:Out0 -> c1:In9 [];
+  c0:Out0 -> c1:In10 [];
+  c0:Out0 -> c1:In11 [];
+  c0:Out0 -> c1:In12 [];
+  c0:Out0 -> c1:In13 [];
+  c0:Out0 -> c1:In14 [];
+  c0:Out0 -> c1:In15 [];
+}
+
+// No components.

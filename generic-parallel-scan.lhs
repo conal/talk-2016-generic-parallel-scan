@@ -116,6 +116,26 @@ efficiently in work and depth (ideal parallel time).
 Note that $a_k$ does \emph{not} influence $b_k$.
 }
 
+\framet{Some applications}{
+From a longer list in \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.128.6230}{\emph{Prefix
+Sums and Their Applications}}:
+\begin{itemize}\itemsep1.7ex
+\item Lexical ordering
+\item Adding multi-precision numbers
+\item Polynomial evaluation
+\item Solving recurrences
+\item Radix sort
+\item Quicksort
+\item Solving tridiagonal linear systems
+%% \item Delete marked elements from an array
+%% \item Dynamic processor allocation
+\item Lexical analysis.
+\item Regular expression search
+%% \item Some tree operations. For example, to find the depth of every vertex in a tree (see Chapter 3).
+%% \item To label components in two dimensional images.
+\end{itemize}
+}
+
 \framet{Linear left scan}{
 \vspace{-2ex}
 \wfig{4.5in}{circuits/lsums-lv8}
@@ -241,8 +261,9 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
 }
 
 \ccircuit{Combine?}{0}{lsums-lv5-lv11-unknown-no-hash}
-
-\ccircuit{Right bump}{0}{lsums-lv5xlv11}
+\ccircuit{Combine?}{0}{lsums-lv5-lv11-unknown-no-hash-highlight}
+\ccircuit{Right bump}{0}{lsums-lv5xlv11-highlight}
+%% \ccircuit{Right bump}{0}{lsums-lv5xlv11}
 
 %else
 \framet{Divide and conquer? \hfill \stats {14}{7}\hspace{2ex}}{
@@ -363,7 +384,6 @@ type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
 \ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7-highlight}
 
 \framet{Composition}{
-\pause
 \vspace{3ex}
 \begin{code}
 instance          (LScan g, LScan f, Functor f, Zip g)
@@ -473,5 +493,101 @@ Easily generalizes beyond pairing and squaring.
 \circuit{$2^{2^2}$}{0}{lsums-bush2}{29}{5}
 \circuit{$2^{2^3}$}{0}{lsums-bush3}{718}{10}
 
+\framet{Parallel, bottom-up, binary tree scan in CUDA C}{
+\begin{minipage}[c]{0.7\textwidth}
+\tiny
+\begin{verbatim}
+__global__ void prescan(float *g_odata, float *g_idata, int n) {
+    extern __shared__ float temp[];  // allocated on invocation
+    int thid = threadIdx.x;
+    int offset = 1;
+    // load input into shared memory
+    temp[2*thid] = g_idata[2*thid];
+    temp[2*thid+1] = g_idata[2*thid+1];
+    // build sum in place up the tree
+    for (int d = n>>1; d > 0; d >>= 1) {
+        __syncthreads();
+        if (thid < d) {
+            int ai = offset*(2*thid+1)-1;
+            int bi = offset*(2*thid+2)-1;
+            temp[bi] += temp[ai]; }
+        offset *= 2; }
+    // clear the last element
+    if (thid == 0) { temp[n - 1] = 0; }
+    // traverse down tree & build scan
+    for (int d = 1; d < n; d *= 2) {
+        offset >>= 1;
+        __syncthreads();
+        if (thid < d) {
+            int ai = offset*(2*thid+1)-1;
+            int bi = offset*(2*thid+2)-1;
+            float t = temp[ai];
+            temp[ai] = temp[bi];
+            temp[bi] += t; } }
+    __syncthreads();
+    // write results to device memory
+    g_odata[2*thid] = temp[2*thid];
+    g_odata[2*thid+1] = temp[2*thid+1]; }
+\end{verbatim}
+\vspace{-6ex}
+\href{http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html}{Source: Harris, Sengupta, and Owens in \emph{GPU Gems 3}, Chapter 39}
+\normalsize
+\end{minipage}
+\hspace{-1in}
+\begin{minipage}[c]{0.25\textwidth}
+\pause
+\begin{figure}
+\wpicture{2in}{beaker-looks-left}
+
+%%\pause
+\hspace{0.75in}\emph{WAT}
+\end{figure}
+\end{minipage}
+}
+
+\framet{Some convenient packaging}{
+
+\begin{code}
+lscanAla  ::  (Newtype n, o ~ O n, LScan f, Monoid n)
+          =>  (o -> n) -> f o -> And1 f o
+lscanAla = flip underF lscan
+
+lsums      = lscanAla Sum
+lproducts  = lscanAla Product
+lalls      = lscanAla All
+...
+\end{code}
+\pause Some simple uses:
+\begin{code}
+multiples  = lsums      . point
+powers     = lproducts  . point
+
+multiplicationTable  = multiples  <$> multiples  1
+fiddleFactors        = powers     <$> powers     omega
+\end{code}
+}
+
+\circuit{|lproducts @(RPow Pair N4)|}{-1}{lproducts-rb4}{32}{4}
+\framet{|point @(RPow Pair N4)|}{\wfig{3in}{circuits/point-rb4}}
+%% \ccircuit{|point @(RPow Pair N4)|}{0}{point-rb4}
+\circuit{|powers @(RPow Pair N4)|}{-1}{powers-rb4-no-hash}{32}{4}
+\circuit{|powers @(RPow Pair N4)| --- with CSE}{-1}{powers-rb4}{15}{4}
+
+\framet{Example: polynomial evaluation}{
+
+\begin{code}
+evalPoly  ::  (LScan f, Foldable f, Zip f, Pointed f, Num a)
+          =>  And1 f a -> a -> a
+evalPoly coeffs x = coeffs <.> powers x
+
+NOP
+
+(<.>) :: (Foldable f, Zip f, Num a) => f a -> f a -> a
+u <.> v = sum (zipWith (*) u v)
+\end{code}
+}
+
+\circuit{|(<.>) @(And1 (RPow Pair N4))|}{0}{dot-rb4-1}{17+16}{6}
+\circuit{|evalPoly @(RPow Pair N4)|}{0}{evalPoly-rb4}{31+16}{10}
 
 \end{document}

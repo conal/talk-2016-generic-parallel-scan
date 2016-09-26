@@ -119,3 +119,5 @@
 
 %format adjustl = bump
 %format =~ = " \simeq "
+
+%format <.> = "\cdot"

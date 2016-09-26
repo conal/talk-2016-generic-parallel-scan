@@ -5,10 +5,19 @@ subst: ["&&& △","*** ×","||| ▽","+++ +","|- ⊢","<~ ⤺","k (↝)","op (�
 
 ## To do
 
-*   Complexity --- Master Theorem
-*   Conclusion
+*   Some applications:
+    *   Polynomial evaluation
+    *   Parallel multi-bit adders
+*   Relation to known parallel scan algorithms
+*   Larger tree examples
+*   Conclusions
 *   Statistics summary
-*   CUDA comparison
+*   Complexity --- Master Theorem
+*   Future work:
+    *   Finish complexity analysis (bushes)
+    *   Derive each instance from the `Traversable`-based specification.
+*   Move supporting code to a new Stack project under this directory.
+
 *   Consider a picture with 2D layout for parallel scan, akin to FFT.
     *   Horizontal arrows to show the scan paths.
     *   Add a result column for the sub-totals.
@@ -18,11 +27,15 @@ subst: ["&&& △","*** ×","||| ▽","+++ +","|- ⊢","<~ ⤺","k (↝)","op (�
         If not, could they?
     *   Wide vs tall.
     *   Maybe my circuit diagrams would work fine.
-*   Move supporting code to a new Stack project under this directory.
 
+## Maybe don't
+
+*   A type closer to the original bush type.
 
 ## Done
 
+*   Update abstract in [the README](README.md) and [meetup announcement](https://www.meetup.com/haskellhackers/events/234242974/).
+*   Minimal CUDA comparison
 *   Generics / tinker toys.
     Show at least some of the `LScan` instances, including product and (especially) composition.
 *   Use `LPow` and `RPow` from *Generic FFT*.
