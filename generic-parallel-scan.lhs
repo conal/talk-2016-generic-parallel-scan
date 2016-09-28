@@ -32,7 +32,10 @@
 \usepackage{setspace}
 \usepackage{enumerate}
 \usepackage{tikzsymbols}
-\usepackage{fancybox}
+% \usepackage{fancybox}
+\usepackage[many]{tcolorbox}
+
+\tcbset{enhanced,boxrule=0.5pt,colframe=black!50!blue,colback=white,boxsep=-2pt,drop fuzzy shadow}
 
 \usepackage[absolute,overlay]{textpos}  % ,showboxes
 
@@ -86,7 +89,7 @@
 \definecolor{shadecolor}{rgb}{0.95,0.95,0.95}
 \setlength{\fboxsep}{0.75ex}
 \setlength{\fboxrule}{0.15pt}
-\setlength{\shadowsize}{2pt}
+%% \setlength{\shadowsize}{2pt}
 
 %% \nc\cbox[1]{\raisebox{-0.5\height}{\fbox{#1}}}
 \nc\cpic[2]{\fbox{\wpicture{#1}{circuits/#2}}}
@@ -154,14 +157,14 @@ Linear \emph{dependency chain} thwarts parallelism (depth $<$ work).
 \framet{Scan class}{
 \vspace{10ex}
 \begin{code}
-class LScan f where
+class Functor f => LScan f where
   lscan :: Monoid a => f a -> f a :* a
 \end{code}
 
 \pause\vspace{10ex}
 Specification (if |Traversable|):
 \begin{code}
-lscan == swap . mapAccumL (\ tot a -> (tot <> a,tot)) mempty
+lscan == swap . mapAccumL (\ acc a -> (acc <> a,acc)) mempty
 \end{code}
 %% where
 %% \begin{code}
@@ -196,28 +199,13 @@ Plan:
 }
 
 \framet{Scan class}{
-\vspace{3ex}
 \begin{code}
-class LScan f where
-  lscan :: Monoid a => f a -> And1 f a
+class Functor f => LScan f where
+  lscan :: Monoid a => f a -> f a :* a
   
   default lscan  ::  (Generic1 f, LScan (Rep1 f))
-                 =>  Monoid a => f a -> And1 f a
-  lscan = firstAnd1 to1 . lscan . from1
-\end{code}
-
-\pause\vspace{2ex}
-% \hrule
-\vspace{2ex}
-
-\begin{code}
-type And1 f = f :*: Par1
-
-pattern (:>) :: f a -> a -> And1 f a
-pattern fa :> a = fa :*: Par1 a
-
-firstAnd1 :: (f a -> g a) -> And1 f a -> And1 g a
-firstAnd1 q (fa :> a) = q fa :> a
+                 =>  Monoid a => f a -> f a :* a
+  lscan = first to1 . lscan . from1
 \end{code}
 }
 
@@ -226,9 +214,9 @@ firstAnd1 q (fa :> a) = q fa :> a
 \begin{code}
 instance LScan V1    where lscan = \ SPC case
 
-instance LScan U1    where lscan = (NOP :> mempty)
+instance LScan U1    where lscan U1 = (U1, mempty)
 
-instance LScan Par1  where lscan (Par1 a) = Par1 mempty :> a
+instance LScan Par1  where lscan (Par1 a) = (Par1 mempty, a)
 \end{code}
 %if False
 \vspace{-6ex}
@@ -246,10 +234,6 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
 \end{code}
 }
 
-%% \circuit{Linear example}{0}{lsums-lv16}{15}{15}
-%% \circuit{Products: $a^{m+n} = a^m \times a^n$}{0}{lsums-lv16}{15}{15}
-
-%if True
 %% $a^{16} = a^5 \times a^{11}$
 \framet{Product example: |Vec N5 :*: Vec N11|}{
 \vspace{-2ex}
@@ -262,35 +246,24 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
 
 \ccircuit{Combine?}{0}{lsums-lv5-lv11-unknown-no-hash}
 \ccircuit{Combine?}{0}{lsums-lv5-lv11-unknown-no-hash-highlight}
-\ccircuit{Right bump}{0}{lsums-lv5xlv11-highlight}
-%% \ccircuit{Right bump}{0}{lsums-lv5xlv11}
+\ccircuit{Right adjust}{0}{lsums-lv5xlv11-highlight}
 
-%else
-\framet{Divide and conquer? \hfill \stats {14}{7}\hspace{2ex}}{
-\vspace{-2ex}
-\wfig{4.5in}{circuits/lsums-lv8-wide}
-\vspace{-5ex}
-\wfig{4.5in}{circuits/lsums-lv8-wide}
-\vspace{-4ex}
-\emph{Then what?}
+\newcommand{\upperExample}{
+\begin{textblock}{162}[1,0](350,5)
+\begin{tcolorbox}
+\wfig{2in}{circuits/lsums-lv5xlv11-highlight}
+\end{tcolorbox}
+\end{textblock}
 }
 
-\circuit{Divide and conquer?}{0}{lsums-lv8-lv8-unknown-no-hash}{14+?}{7+?}
-\circuit{Divide and conquer}{0}{lsums-p-lv8}{22}{8}
-%endif
-
-\framet{Products}{
+\framet{Products}{\upperExample
+\pause\vspace{13ex}
 \begin{code}
-instance (LScan f, LScan g, Functor g) => LScan (f :*: g) where
-  lscan (fa :*: ga) = (fa' :*: ga') :> gx
+instance (LScan f, LScan g) => LScan (f :*: g) where
+  lscan (fa :*: ga) = (fa' :*: ((fx <> NOP) <#> ga'), fx <> gx)
    where
-     fa'  :>  fx  =                 lscan fa
-     ga'  :>  gx  = adjustl fx <#>  lscan ga
-
-SPC
-
-adjustl :: (Monoid a, Functor g) => a -> g a -> g a
-adjustl a as = (a <> NOP) <#> as
+     (fa'  , fx)  = lscan fa
+     (ga'  , gx)  = lscan ga
 \end{code}
 }
 
@@ -383,26 +356,24 @@ type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
 \ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7}
 \ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7-highlight}
 
-\framet{Composition}{
-\vspace{3ex}
+\renewcommand{\upperExample}{
+\begin{textblock}{162}[1,0](350,5)
+\begin{tcolorbox}
+\wfig{2in}{circuits/lsums-lv3olv4-highlight}
+\end{tcolorbox}
+\end{textblock}
+}
+
+\framet{Composition}{\upperExample
+\pause\vspace{13ex}
 \begin{code}
-instance          (LScan g, LScan f, Functor f, Zip g)
-  SPACE SPACE =>  LScan (g :.: f) where
-  lscan (Comp1 gfa) = Comp1 (zipWith adjustl tots' gfa') :> tot
+instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
+  lscan (Comp1 gfa) = (Comp1 (zipWith adjustl tots' gfa'), tot)
    where
-     (gfa', tots)  = unzipAnd1 (lscan <#> gfa)
-     tots' :> tot  = lscan tots
+     (gfa', tots)  = unzip (lscan <#> gfa)
+     (tots',tot)   = lscan tots
+     adjustl t     = fmap (t <>)
 \end{code} % 
-
-\vspace{3ex}
-
-\begin{code}
-unzipAnd1 :: forall g f a. Functor g => g (And1 f a) -> g (f a) :* g a
-unzipAnd1 = unzip . fmap (\ (as :> a) -> (as,a))
-
-unzip :: Functor f => f (a, b) -> (f a, f b)
-unzip ps = (fst <#> ps, snd <#> ps)
-\end{code}
 }
 
 \circuit{|Pair :.: LVec N8|}{0}{lsums-p-lv8}{22}{8}
@@ -487,11 +458,10 @@ Easily generalizes beyond pairing and squaring.
 %% \circuit{|Bush N2|}{-1}{lsums-bush2}{29}{5}
 
 \circuit{|Bush N0|}{0}{lsums-bush0}{1}{1}
-\circuit{$2^{2^0}$}{0}{lsums-bush0}{1}{1}
-%\circuit{|Bush N1|}{0}{lsums-bush1}{4}{2}
-\circuit{$2^{2^1}$}{0}{lsums-bush1}{4}{2}
-\circuit{$2^{2^2}$}{0}{lsums-bush2}{29}{5}
-\circuit{$2^{2^3}$}{0}{lsums-bush3}{718}{10}
+\circuit{|Bush' N0|}{0}{lsums-bush0}{1}{1}
+\circuit{|Bush' N1|}{0}{lsums-bush1}{4}{2}
+\circuit{|Bush' N2|}{0}{lsums-bush2}{29}{5}
+\circuit{|Bush' N3|}{0}{lsums-bush3}{718}{10}
 
 \framet{Parallel, bottom-up, binary tree scan in CUDA C}{
 \begin{minipage}[c]{0.7\textwidth}
@@ -546,39 +516,49 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
 }
 
 \framet{Some convenient packaging}{
-
+%if True
 \begin{code}
-lscanAla  ::  (Newtype n, o ~ O n, LScan f, Monoid n)
-          =>  (o -> n) -> f o -> And1 f o
-lscanAla = flip underF lscan
+lscanAla  ::  forall n o f. (Newtype n, o ~ O n, LScan f, Monoid n)
+          =>  (o -> n) -> f o -> f o :* o
+lscanAla _ = (fmap unpack *** unpack) . lscan . fmap (pack @n)
+\end{code}
+\begin{code}
+lsums      =  lscanAla Sum
+lproducts  =  lscanAla Product
+lalls      =  lscanAla All
+           ...    
+\end{code}
+%else
+\begin{code}
+lscanAla  ::  forall n o f. (Newtype n, o ~ O n, LScan f, Monoid n)
+          =>  f o -> f o :* o
+lscanAla = (fmap unpack *** unpack) . lscan . fmap (pack @n)
 
-lsums      = lscanAla Sum
-lproducts  = lscanAla Product
-lalls      = lscanAla All
+lsums      = lscanAla @(Sum a)
+lproducts  = lscanAla @(Product a)
+lalls      = lscanAla @All
 ...
 \end{code}
+%endif
 \pause Some simple uses:
 \begin{code}
 multiples  = lsums      . point
 powers     = lproducts  . point
-
-multiplicationTable  = multiples  <$$> multiples  1
-fiddleFactors        = powers     <$$> powers     omega
 \end{code}
 }
 
-\circuit{|lproducts @(RPow Pair N4)|}{-1}{lproducts-rb4}{32}{4}
-%% \circuit{|point @(RPow Pair N4)|}{0}{point-rb4}{0}{0}
-\framet{|point @(RPow Pair N4)|}{\vspace{1ex}\wfig{3.5in}{circuits/point-rb4}}
-\circuit{|powers @(RPow Pair N4)|}{-1}{powers-rb4-no-hash}{32}{4}
-\circuit{|powers @(RPow Pair N4)| --- with CSE}{-1}{powers-rb4}{15}{4}
+\circuit{|lproducts @(RBin N4)|}{-1}{lproducts-rb4}{32}{4}
+%% \circuit{|point @(RBin N4)|}{0}{point-rb4}{0}{0}
+\framet{|point @(RBin N4)|}{\vspace{1ex}\wfig{3.5in}{circuits/point-rb4}}
+\circuit{|powers @(RBin N4)|}{-1}{powers-rb4-no-hash}{32}{4}
+\circuit{|powers @(RBin N4)| --- with CSE}{-1}{powers-rb4}{15}{4}
 
 \framet{Example: polynomial evaluation}{
 
 \begin{code}
 evalPoly  ::  (LScan f, Foldable f, Zip f, Pointed f, Num a)
-          =>  And1 f a -> a -> a
-evalPoly coeffs x = coeffs <.> powers x
+          =>  f a -> a -> a
+evalPoly coeffs x = coeffs <.> fst (powers x)
 
 NOP
 
@@ -587,7 +567,37 @@ u <.> v = sum (zipWith (*) u v)
 \end{code}
 }
 
-\circuit{|(<.>) @(And1 (RPow Pair N4))|}{0}{dot-rb4-1}{17+16}{6}
-\circuit{|evalPoly @(RPow Pair N4)|}{0}{evalPoly-rb4}{31+16}{10}
+\circuit{|(<.>) @(RBin N4)|}{0}{dot-rb4}{17+16}{6}
+\circuit{|evalPoly @(RBin N4)|}{0}{evalPoly-rb4}{31+16}{10}
+
+\framet{Addition}{
+
+Generate and propagate carries:
+\begin{code}
+data PropGen = PropGen Bool Bool
+\end{code}
+
+\begin{code}
+propGen :: Pair Bool -> PropGen
+propGen (a :# b) = PropGen (a `xor` b) (a && b)  -- half adder
+\end{code}
+
+\pause\vspace{1ex}
+
+\begin{code}
+instance Monoid PropGen where
+  mempty = PropGen True False
+  PropGen pa ga `mappend` PropGen pb gb =
+    PropGen (pa && pb) ((ga && pb) || gb)
+\end{code}
+}
+
+\circuit{|scanAdd @(LVec' N8)|}{0}{scanAdd-lv8}{37}{15}
+\circuit{|scanAdd @(RBin N3)|}{0}{scanAdd-rb3}{52}{8}
+\circuit{|scanAdd @(LBin N3)|}{0}{scanAdd-lb3}{49}{10}
+
+\circuit{|scanAdd @(RBin N4)|}{0}{scanAdd-rb4}{128}{10}
+\circuit{|scanAdd @(LBin N4)|}{0}{scanAdd-lb4}{110}{14}
+\circuit{|scanAdd @(Bush' N2)|}{0}{scanAdd-bush2}{119}{12}
 
 \end{document}

@@ -20,6 +20,7 @@
 %format SPC = "\, {}"
 %format SPACE = "\ \ {}"
 %format NOP = "{}"
+%% %format NOP = "{} \!\!"
 %format PAUSE = "\pause"
 
 %% %format <> = "\mathbin{\Diamond}"
@@ -121,3 +122,19 @@
 %format =~ = " \simeq "
 
 %format <.> = "\cdot"
+
+%format `xor` = " \oplus "
+
+%format *** = "\mathbin{\times}"
+%% %format *** = "\symThree{*}"
+
+%format (LBin (n)) = "\overleftarrow{2^{"n"}}"
+%format (RBin (n)) = "\overrightarrow{2^{"n"}}"
+
+%% %format RBin = RPow "\;" Pair
+%% %format LBin = LPow "\;" Pair
+
+%format (LVec' (n)) = n
+%format (RVec' (n)) = n
+
+%format (Bush' (n)) = "2^{2^{"n"}}"
