@@ -123,17 +123,17 @@ Note that $a_k$ does \emph{not} influence $b_k$.
 \framet{Some applications}{
 From a longer list in \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.128.6230}{\emph{Prefix
 Sums and Their Applications}}:
-\begin{itemize}\itemsep1.7ex
-\item Lexical ordering
+\vspace{0.5ex}
+\begin{itemize}\itemsep2ex
+%% \item Lexical ordering
 \item Adding multi-precision numbers
 \item Polynomial evaluation
 \item Solving recurrences
-\item Radix sort
-\item Quicksort
+\item Sorting
 \item Solving tridiagonal linear systems
 %% \item Delete marked elements from an array
 %% \item Dynamic processor allocation
-\item Lexical analysis.
+\item Lexical analysis
 \item Regular expression search
 %% \item Some tree operations. For example, to find the depth of every vertex in a tree (see Chapter 3).
 %% \item To label components in two dimensional images.
@@ -203,7 +203,7 @@ Plan:
 \begin{code}
 class Functor f => LScan f where
   lscan :: Monoid a => f a -> f a :* a
-  
+  NOP
   default lscan  ::  (Generic1 f, LScan (Rep1 f))
                  =>  Monoid a => f a -> f a :* a
   lscan = first to1 . lscan . from1
@@ -612,18 +612,21 @@ instance Monoid PropGen where
 
 \framet{Generic parallel scan}{
 
-\begin{itemize}\itemsep3ex \setlength{\parskip}{1ex}
+\begin{itemize}\itemsep2.5ex \setlength{\parskip}{1ex}
 \item Parallel scan: useful for many parallel algorithms.
 \item Generic programming:
   \begin{itemize}\itemsep2ex
   \item Define per functor building block.
   \item Use directly, \emph{or}
-  \item automatically via (derived) |Generic1| instances.
+  \item \hspace{2ex} automatically via (derived) |Generic1| instances.
+  \item Infinite variations, easily explored and guaranteed correct.
   \end{itemize}
 \item Some convenient data structures:
 \begin{itemize}\itemsep2ex
-  \item Right and left vectors
-  \item Top-down and bottom-up trees
+  \item Right \& left vectors
+        %% . Depth $O(n)$; work $O(n)$ / $O(n^2)$.
+  \item Top-down \& bottom-up trees
+        %% . Depth $O(\log n)$; work $O(n \log n)$ / $O(n)$.
   \item Bushes
 \end{itemize}
 %if False
