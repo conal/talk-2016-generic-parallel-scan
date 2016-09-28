@@ -175,8 +175,8 @@ main = do
 --   goSep "lsums-lv8-p" 1 (lsums @(LVec N8 :.: Pair) @Int)
 --   goSep "lsums-lv16" 0.5 (lsums @(LVec N16) @Int)
 --   goSep "lsums-lv4olv4" 1 (lsums @(LVec N4 :.: LVec N4) @Int)
---   goSep "lsums-lb4" 1 (lsums @(LBin N4) @Int)
---   goSep "lsums-rb12" 20 (lsums @(RBin N12) @Int)
+  goSep "lsums-lb8" 16 (lsums @(LBin N8) @Int)
+--   goSep "lsums-rb8" 8 (lsums @(RBin N8) @Int)
 --   goSep "lsums-bush2" 1 (lsums @(Bush N2) @Int)
 
 --   -- 0:0.5; 1:0.75; 2:1.5; 3:8
@@ -238,9 +238,9 @@ main = do
 --   goSep "adderAccumL-rb4" 1    (adderAccumL @(RBin' N4))
 
 --   goSep "scanAdd-p"     0.5  (scanAdd @Pair)
-  goSep "scanAdd-lv16"  0.75 (scanAdd @(LVec N16))
-  goSep "scanAdd-rb3"   2    (scanAdd @(RBin' N3))
-  goSep "scanAdd-rb4"   4    (scanAdd @(RBin' N4))
+--   goSep "scanAdd-lv16"  0.75 (scanAdd @(LVec N16))
+--   goSep "scanAdd-rb3"   2    (scanAdd @(RBin' N3))
+--   goSep "scanAdd-rb4"   4    (scanAdd @(RBin' N4))
 --   goSep "scanAdd-rb8"   8    (scanAdd @(RBin' N8))
 --   goSep "scanAdd-lb3"   2    (scanAdd @(LBin' N3))
 --   goSep "scanAdd-lb4"   4    (scanAdd @(LBin' N4))

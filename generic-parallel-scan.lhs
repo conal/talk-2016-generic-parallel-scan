@@ -106,6 +106,7 @@
 \frame{\titlepage}
 
 \framet{Prefix sum (left scan)}{
+\vspace{5ex}
 Given $a_1,\ldots,a_n$, compute
 
 \vspace{3ex}
@@ -270,8 +271,8 @@ instance (LScan f, LScan g) => LScan (f :*: g) where
 \framet{Vector GADT}{\pause
 \begin{code}
 data RVec NOP :: Nat -> * -> * SPC where
-  ZVec  :: RVec Z a 
-  (:<)  :: a -> RVec n a -> RVec (S n) a
+  ZVec  ::                   RVec Z a 
+  (:<)  :: a -> RVec n a ->  RVec (S n) a
 \end{code}
 \pause\vspace{-4ex}
 \begin{code}
@@ -292,6 +293,7 @@ instance Generic1 (RVec (S n)) where
 
 \end{code}
 
+\vspace{1ex}
 Plus |Functor|, |Applicative|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
 }
 
@@ -405,41 +407,43 @@ Plus |Generic1|, |Functor|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
 }
 
 \framet{Exponentiation as type families}{
-
+\vspace{-3ex}
+\begin{center}
+\Large $f^n = \overbrace{f \circ \cdots \circ f}^{n \text{~times}}$
+\end{center}
+\pause\vspace{1ex}
 Right-associated/top-down:
 
-> type family RPow h n where
->   RPow h Z      = Par1
->   RPow h (S n)  = h :.: RPow h n
-
+\begin{code}
+type family RPow h n where
+  RPow h Z      = Par1
+  RPow h (S n)  = h :.: RPow h n
+\end{code}
 {}
 
 Left-associated/bottom-up:
-
-> type family LPow h n where
->   LPow h Z      = Par1
->   LPow h (S n)  = LPow h n :.: h
-
+\begin{code}
+type family LPow h n where
+  LPow h Z      = Par1
+  LPow h (S n)  = LPow h n :.: h
+\end{code}
 }
 
-\circuit{|LPow (LVec N4) N2|}{0}{lsums-lpow-4-2}{24}{6}
+\circuit{|RPow (LVec N4) N2|}{0}{lsums-lpow-4-2}{24}{6}
 \circuit{$4^2$}{0}{lsums-lpow-4-2}{24}{6}
 
-%% \circuit{|LPow Pair N4|}{-1}{lsums-lb4}{26}{6}
-\circuit{$\overleftarrow{2^4} = ((2 \times 2) \times 2) \times 2$}{-1}{lsums-lb4}{26}{6}
-
 \circuit{$\overrightarrow{2^4} = 2 \times (2 \times (2 \times 2))$}{-1}{lsums-rb4}{32}{4}
-%% \circuit{|RPow Pair N4|}{-1}{lsums-rb4}{32}{4}
+\circuit{$\overleftarrow{2^4} = ((2 \times 2) \times 2) \times 2$}{-1}{lsums-lb4}{26}{6}
 
 \circuit{$2^4 = (2^2)^2 = (2 \times 2) \times (2 \times 2)$}{-1}{lsums-bush2}{29}{5}
 
 \framet{Bushes}{
 \vspace{5ex}
-
-> type family Bush n where
->   Bush Z      = Pair
->   Bush (S n)  = Bush n :.: Bush n
-
+\begin{code}
+type family Bush n where
+  Bush Z      = Pair
+  Bush (S n)  = Bush n :.: Bush n
+\end{code}
 \vspace{3ex}\pause
 
 Notes:
@@ -463,7 +467,12 @@ Easily generalizes beyond pairing and squaring.
 \circuit{|Bush' N2|}{0}{lsums-bush2}{29}{5}
 \circuit{|Bush' N3|}{0}{lsums-bush3}{718}{10}
 
+\circuit{$\overrightarrow{2^8}$}{-1}{lsums-rb8}{1024}{8}
+\circuit{$\overleftarrow{2^8}$}{-1}{lsums-lb8}{502}{14}
+
+%if False
 \framet{Parallel, bottom-up, binary tree scan in CUDA C}{
+\pause
 \begin{minipage}[c]{0.7\textwidth}
 \tiny
 \begin{verbatim}
@@ -514,6 +523,7 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
 \end{figure}
 \end{minipage}
 }
+%endif
 
 \framet{Some convenient packaging}{
 %if True
@@ -567,11 +577,11 @@ u <.> v = sum (zipWith (*) u v)
 \end{code}
 }
 
-\circuit{|(<.>) @(RBin N4)|}{0}{dot-rb4}{17+16}{6}
+\circuit{|(<.>) @(RBin N4)|}{-0.5}{dot-rb4}{17+16}{6}
 \circuit{|evalPoly @(RBin N4)|}{0}{evalPoly-rb4}{31+16}{10}
 
 \framet{Addition}{
-
+\pause
 Generate and propagate carries:
 \begin{code}
 data PropGen = PropGen Bool Bool
@@ -599,5 +609,32 @@ instance Monoid PropGen where
 \circuit{|scanAdd @(RBin N4)|}{0}{scanAdd-rb4}{128}{10}
 \circuit{|scanAdd @(LBin N4)|}{0}{scanAdd-lb4}{110}{14}
 \circuit{|scanAdd @(Bush' N2)|}{0}{scanAdd-bush2}{119}{12}
+
+\framet{Generic parallel scan}{
+
+\begin{itemize}\itemsep3ex \setlength{\parskip}{1ex}
+\item Parallel scan: useful for many parallel algorithms.
+\item Generic programming:
+  \begin{itemize}\itemsep2ex
+  \item Define per functor building block.
+  \item Use directly, \emph{or}
+  \item automatically via (derived) |Generic1| instances.
+  \end{itemize}
+\item Some convenient data structures:
+\begin{itemize}\itemsep2ex
+  \item Right and left vectors
+  \item Top-down and bottom-up trees
+  \item Bushes
+\end{itemize}
+%if False
+\item Future work:
+  \begin{itemize}\itemsep2ex
+  \item Finish complexity analysis (bushes)
+  \item Derive each instance from the |Traversable|-based specification.
+  \item |Monoid| vs |Semigroup|, e.g., |Max| with |RPow|, |LPow|, |Bush|, and non-empty left- and right-vectors.
+  \end{itemize}
+%endif
+\end{itemize}
+}
 
 \end{document}

@@ -118,7 +118,7 @@
 % %format :> = "\mathbin{:\!>}"
 %format :> = "\mathbin{\rhd}"
 
-%format adjustl = bump
+%% %format adjustl = bump
 %format =~ = " \simeq "
 
 %format <.> = "\cdot"
