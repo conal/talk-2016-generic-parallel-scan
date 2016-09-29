@@ -1,6 +1,6 @@
 %% -*- latex -*-
 
-%% %let long = True
+%let analysis = True
 
 % Presentation
 %\documentclass[aspectratio=1610]{beamer} % Macbook Pro screen 16:10
@@ -71,6 +71,10 @@
 \newcommand\circuit[5]{
 \ccircuit{#1 \hfill \stats {#4}{#5}\hspace{2ex}}{#2}{#3}
 }
+
+\DeclareMathOperator{\D}{Depth}
+\DeclareMathOperator{\W}{Work}
+\nc\Size[1]{\lvert #1 \rvert}
 
 \title{Generic parallel scan}
 \author{\href{http://conal.net}{Conal Elliott}}
@@ -233,6 +237,13 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
   lscan (L1  fa  ) = L1  (lscan fa  )
   lscan (R1  ga  ) = R1  (lscan ga  )
 \end{code}
+%if False
+Analysis:
+\begin{align*}
+\W (f \pmb{+} g) &= \max (\W f, \W g)\\
+\D (f \pmb{+} g) &= \max (\D f, \D g)
+\end{align*}
+%endif
 }
 
 %% $a^{16} = a^5 \times a^{11}$
@@ -266,6 +277,14 @@ instance (LScan f, LScan g) => LScan (f :*: g) where
      (fa'  , fx)  = lscan fa
      (ga'  , gx)  = lscan ga
 \end{code}
+
+%if False
+Analysis:
+\begin{align*}
+\W (f \pmb{\times} g) & = \W(f) + \W(g) + \Size g + 1 \\
+\D (f \pmb{\times} g) &= \max (\D(f), \D(g) + 1)
+\end{align*}
+%endif
 }
 
 \framet{Vector GADT}{\pause
@@ -375,7 +394,14 @@ instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
      (gfa', tots)  = unzip (lscan <#> gfa)
      (tots',tot)   = lscan tots
      adjustl t     = fmap (t <>)
-\end{code} % 
+\end{code}
+%if False
+Analysis:
+\begin{align*}
+\W (g \pmb{\circ} f) &= \Size g \times \W(f) + \W(g) + \Size g \times \Size f\\
+\D (g \pmb{\circ} f) &= \Size g \times \D(f) + \D(g) + \Size g \times \Size f
+\end{align*}
+%endif
 }
 
 \circuit{|Pair :.: LVec N8|}{0}{lsums-p-lv8}{22}{8}
