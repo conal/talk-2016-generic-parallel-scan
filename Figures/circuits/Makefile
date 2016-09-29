@@ -3,3 +3,7 @@ up:
 
 see:
 	cd ../..; make see
+
+
+pdfs:
+	cd ../..; make pdfs
