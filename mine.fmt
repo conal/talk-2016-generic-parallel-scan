@@ -138,3 +138,14 @@
 %format (RVec' (n)) = n
 
 %format (Bush' (n)) = "2^{2^{"n"}}"
+
+%format (Size(n)) = "\Size{"n"}"
+%format * = "\times"
+%format ==> = "\therefore"
+
+%% %format a ^ (n) = a"^{"n"}"
+
+%format pow a (n) = a"^{"n"}"
+
+%format Work = W
+%format Depth = D
