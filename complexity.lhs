@@ -24,12 +24,6 @@
 \setlength{\blanklineskip}{1.5ex}
 \setlength\mathindent{4ex}
 
-\DeclareMathOperator{\ParOne}{Par_1}
-\DeclareMathOperator{\LVec}{LVec}
-\DeclareMathOperator{\RVec}{RVec}
-\DeclareMathOperator{\LPow}{LPow}
-\DeclareMathOperator{\RPow}{RPow}
-
 \begin{document}
 
 \frame{\titlepage}
@@ -43,13 +37,12 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
   lscan (L1  fa  ) = L1  (lscan fa  )
   lscan (R1  ga  ) = R1  (lscan ga  )
 \end{code}
-%if analysis
 Analysis:
-\begin{align*}
-\W (f \pmb{+} g) &= \max (\W f, \W g)\\
-\D (f \pmb{+} g) &= \max (\D f, \D g)
-\end{align*}
-%endif
+\begin{code}
+Work   (f :+: g)  = max (Work   f) (Work   g)
+
+Depth  (f :+: g)  = max (Depth  f) (Depth  g)
+\end{code}
 }
 
 \framet{Products}{
@@ -68,14 +61,12 @@ instance (LScan f, LScan g) => LScan (f :*: g) where
      (ga'  , gx)  = lscan ga
 \end{code}
 %endif
-%if analysis
 Analysis:
-\begin{align*}
-\W (f \pmb{\times} g) & = \W(f) + \W(g) + \Size g + 1 \\
-\\
-\D (f \pmb{\times} g) &= \max (\D(f), \D(g)) + 1
-\end{align*}
-%endif
+\begin{code}
+Work   (f :*: g)  = Work f + Work g + Size g + 1
+
+Depth  (f :*: g)  = max (Depth f) (Depth g) + 1
+\end{code}
 }
 
 \framet{Composition}{
@@ -95,14 +86,12 @@ instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
      adjustl t     = fmap (t <>)
 \end{code}
 %endif
-%if analysis
 Analysis:
-\begin{align*}
-\W (g \pmb{\circ} f) &= \Size g \times \W(f) + \W(g) + \Size g \times \Size f\\
-\\
-\D (g \pmb{\circ} f) &= \D(f) + \D(g)
-\end{align*}
-%endif
+\begin{code}
+Work   (g:.: f) = Size g * Work f + Work g + Size g * Size f
+
+Depth  (g:.: f) = Depth(f) + Depth(g)
+\end{code}
 }
 
 \framet{Right-associated vectors}{
@@ -119,20 +108,20 @@ type family RVec_n where
 \end{tcolorbox}
 \end{textblock}
 \vspace{6ex}
-\begin{align*}
-\W (\RVec_0) &= 0 \\
-\W (\RVec_{1+n}) &= \W(\ParOne) + \W(\RVec_n) + \Size{\RVec_n} + 1 \\
-                &= \W(\RVec_n) + O(n) \\
- &\therefore\\
-\W (\RVec_n) &= O(n^2) \\
-\end{align*}
-\hrule
-\begin{align*}
-\D (\RVec_0) &= 0 \\
-\D (\RVec_{1+n}) &= \max (0,\D(\RVec_n)) + 1\\
- &\therefore\\
-\D (\RVec_n) &= O(n) \\
-\end{align*}
+\begin{code}
+Work (RVec 0)      = 0
+Work (RVec (S n))  = Work Par1 + Work (RVec n) + Size (RVec n) + 1
+                   = Work (RVec n) + O(n)
+                   ==>
+Work (RVec n)      = O(pow n 2)
+\end{code}
+\vspace{1ex}
+\begin{code}
+Depth (RVec 0)      = 0
+Depth (RVec (S n))  = max 0 Depth (RVec n) + 1
+                    ==>
+Depth (RVec n)      = O(n)
+\end{code}
 }
 
 \framet{Left-associated vectors}{
@@ -149,20 +138,20 @@ type family LVec_n where
 \end{tcolorbox}
 \end{textblock}
 \vspace{6ex}
-\begin{align*}
-\W (\LVec_0) &= 0 \\
-\W (\LVec_{n+1}) &= \W(\LVec_n) + \W(\ParOne) + \Size{\ParOne} + 1 \\
-                &= \W(\LVec_n) + O(1) \\
- &\therefore\\
-\W (\LVec_n) &= O(n) \\
-\end{align*}
-\hrule
-\begin{align*}
-\D (\LVec_0) &= 0 \\
-\D (\LVec_{n+1}) &= \max (\D(\LVec_n), 0) + 1\\
- &\therefore\\
-\D (\LVec_n) &= O(n) \\
-\end{align*}
+\begin{code}
+Work (LVec 0)      = 0
+Work (LVec (S n))  = Work (LVec n) + Work Par1 + Size Par1 + 1
+                   = Work(LVec n) + O(1)
+                   ==>
+Work (LVec n)      = O(n)
+\end{code}
+\vspace{1ex}
+\begin{code}
+Depth (LVec 0)      = 0
+Depth (LVec (S n))  = max (Depth (LVec n)) 0 + 1
+                    ==>
+Depth (LVec n)      = O(n)
+\end{code}
 }
 
 \framet{Right-associated trees}{
@@ -179,21 +168,27 @@ type family RPow h n where
 \end{tcolorbox}
 \end{textblock}
 \vspace{6ex}
-\begin{align*}
-\W (\RPow h 0) &= 0 \\
-\W (\RPow h (1+n)) &= \Size{h} \times \W(\RPow_n) + \W(h) + \Size{h}^{1+n} \\
-                   &= \Size{h} \times \W(\RPow_n) + O(\Size{\RPow_{1+n}}) \\
- &\therefore\\
-\W (\RPow_n) &= O(\Size{\RPow_n}^2) \\
-\end{align*}
-\hrule
-\begin{align*}
-\end{align*}
+\small \setlength\mathindent{0.5ex}
+\begin{code}
+Work (RPow h 0)      = 0
+Work (RPow h (S n))  = Size h * Work (RPow h n) + Work h + Size (RPow h (S n))
+                     = Size h * Work (RPow h n) + O (Size (RPow h (S n)))
+                     ==>
+Work (RPow h n)      = O (Size (RPow h n) * log (Size (RPow h n)))
+\end{code}
+\vspace{1ex}
+\begin{code}
+Depth (RPow h 0)      = 0
+Depth (RPow h (S n))  = Depth h + Depth (RPow h n)
+                      ==>
+Depth (RPow h n)      = O (n)
+                      = O (log (Size (RPow h n)))
+\end{code}
 }
 
 \framet{Left-associated trees}{
-\begin{textblock}{157}[1,0](350,5)
-\setlength\mathindent{0.5ex}
+\begin{textblock}{180}[1,0](350,5)
+\setlength\mathindent{0ex}
 \begin{tcolorbox}
 \vspace{-1ex}
 \begin{code}
@@ -204,22 +199,111 @@ type family LPow h n where
 \vspace{-3.5ex}
 \end{tcolorbox}
 \end{textblock}
-\vspace{4ex}
-\begin{align*}
-\W (\LPow_0) &= 0 \\
-\W (\LPow_{1+n}) &= \W(\ParOne) + \W(\LPow_n) + \Size{\LPow_n} + 1 \\
-                &= \W(\LPow_n) + O(n) \\
- &\therefore\\
-\W (\LPow_n) &= O(n^2) \\
-\end{align*}
-\hrule
-\begin{align*}
-\D (\LPow_0) &= 0 \\
-\D (\LPow_{1+n}) &= \max (0,\D(\LPow_n)) + 1\\
- &\therefore\\
-\D (\LPow_n) &= O(n) \\
-\end{align*}
+\vspace{6ex}
+\small \setlength\mathindent{0.5ex}
+\begin{code}
+Work (LPow h 0)      = 0
+Work (LPow h (S n))  = Size (LPow h n) * Work h + Work (LPow h n) + Size (LPow h (S n))
+                     = Work (LPow h n) + O (Size (LPow h (S n)))
+                     ==>
+Work (LPow h n)      = O (Size (LPow h n))
+\end{code}
+\vspace{1ex}
+\begin{code}
+Depth (LPow h 0)      = 0
+Depth (LPow h (S n))  = Depth (LPow h n) + Depth h
+                      ==>
+Depth (LPow h n)      = O (n)
+                      = O (log (Size (LPow h n)))
+\end{code}
+}
+
+\framet{Bushes}{
+\begin{textblock}{180}[1,0](350,5)
+\setlength\mathindent{0ex}
+\begin{tcolorbox}
+\vspace{-1ex}
+\begin{code}
+type family Bush n where
+  Bush Z      = Pair
+  Bush (S n)  = Bush n :.: Bush n
+\end{code}
+\vspace{-3.5ex}
+\end{tcolorbox}
+\end{textblock}
+\vspace{6ex}
+\setlength\mathindent{0.25ex}
+\begin{code}
+Work (Bush 0)      = O (1)
+Work (Bush (S n))  = Size (Bush n) * Work (Bush n) + Work (Bush n) + Size (Bush (S n))
+                   ==>
+Work (Bush n)      = ??
+\end{code}
+\vspace{1ex}
+\begin{code}
+Depth (Bush 0)      = 0
+Depth (Bush (S n))  = Depth (Bush n) + Depth (Bush n)
+                    = 2 * Depth (Bush n)
+                    ==>
+Depth (Bush n)      = pow 2 n
+                    = log (Size (Bush n))
+\end{code}
+}
+
+\partframe{FFT}
+
+\framet{Composition}{
+\wfig{3.25in}{cooley-tukey-general}
+\begin{center}
+\vspace{-5ex}
+\sourced{https://en.wikipedia.org/wiki/Cooley\%E2\%80\%93Tukey_FFT_algorithm\#General_factorizations}
+\end{center}
+}
+
+\newcommand{\upperCT}{
+\begin{textblock}{153}[1,0](353,7)
+\begin{tcolorbox}
+\wpicture{1.9in}{cooley-tukey-general}
+\end{tcolorbox}
+\end{textblock}
+}
+
+\framet{Composition}{\upperCT
+\vspace{12ex}
+\begin{code}
+Work   (g :.: f)  = Size f * Work g + Size g * Size f + Size g * Work f
+
+Depth  (g :.: f)  = Depth g + 1 + Depth f
+\end{code}
 }
 
 
+\framet{Right-associated trees}{\upperCT
+\vspace{12ex}
+\begin{code}
+Work (RPow h Z)      = 0
+Work (RPow h (S n))  = Work (h :.: RPow h n)
+    =  Size (RPow h n) * Work h + Size (RPow h (S n)) + Size h * Work (RPow h n)
+    =  O (Size (RPow h n)) + Size (RPow h (S n)) + O (Work (RPow h n))
+    =  O (Work (RPow h n)) + O (Size (RPow h n))
+                     ==>
+Work (RPow h n)      = O (Size (RPow h n) * log (Size (RPow h n)))
+\end{code}
+}
+
+\framet{Left-associated trees}{\upperCT
+\vspace{12ex}
+\begin{code}
+Work (LPow h Z)      = 0
+Work (LPow h (S n))  = Work (LPow h n :.: h)
+    =  Size h * Work (LPow h n) + Size (LPow h (S n)) + Size (LPow h n) * Work h
+    =  O (Work (LPow h n)) + Size (LPow h (S n)) + O (Size (LPow h n))
+    =  O (Work (LPow h n)) + O (Size (LPow h n))
+                     ==>
+Work (LPow h n)      = O (Size (LPow h n) * log (Size (LPow h n)))
+\end{code}
+}
+
 \end{document}
+
+
