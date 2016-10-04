@@ -557,17 +557,17 @@ instance Monoid PropGen where
 
 \framet{Generic parallel scan}{
 
-\begin{itemize}\itemsep2ex \setlength{\parskip}{1ex}
+\begin{itemize}\itemsep1.8ex \setlength{\parskip}{1ex}
 \item Parallel scan: useful for many parallel algorithms.
 \item Generic programming:
-  \begin{itemize}\itemsep2ex
+  \begin{itemize}\itemsep1.8ex
   \item Define per functor building block.
   \item Use directly, \emph{or}
   \item \hspace{2ex} automatically via (derived) |Generic1| instances.
   \item Infinite variations, easily explored and guaranteed correct.
   \end{itemize}
 \item Some convenient data structures:
-\begin{itemize}\itemsep2ex
+\begin{itemize}\itemsep1.8ex
   \item Right \& left vectors
         %% . Depth $O(n)$; work $O(n)$ / $O(n^2)$.
   \item Top-down \& bottom-up trees
@@ -577,7 +577,7 @@ instance Monoid PropGen where
 \end{itemize}
 %if False
 \item Future work:
-  \begin{itemize}\itemsep2ex
+  \begin{itemize}\itemsep1.8ex
   \item Finish complexity analysis (bushes)
   \item Derive each instance from the |Traversable|-based specification.
   \item |Monoid| vs |Semigroup|, e.g., |Max| with |RPow|, |LPow|, |Bush|, and non-empty left- and right-vectors.
