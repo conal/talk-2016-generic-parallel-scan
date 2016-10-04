@@ -1,5 +1,9 @@
 # Generic parallel scan
 
+A [talk given at the Silicon Valley Haskell meetup, August 31, 2016](https://www.meetup.com/haskellhackers/events/234242974/).
+
+## Abstract
+
 This talk continues a theme from [*Generic FFT*], namely elegant, *generic* construction of efficient, parallel-friendly algorithms. By "generic" (also called "polytypic"), I mean structured via very simple and general data structure building blocks. Such developments produce not just a single algorithm, but an infinite family of algorithms, one for each data structure that can be assembled from the building blocks.
 
 This time, we'll delve into (parallel) prefix computations---known as "scans" to functional programmers. Starting with a simple definition that performs linear work and takes linear time even in a parallel setting, we then consider each of the six generic building blocks of data structures. Four have cheap and easy scans, while the remaining two (functor product and composition) provide opportunities for parallel evaluation. Among the many different scan algorithms that arise for different data types, two at least are well-known. Both perform in $O(\log n)$ parallel time (given sufficient computational resources), while one does work $O(n \log n)$ work and the other $O(n)$.

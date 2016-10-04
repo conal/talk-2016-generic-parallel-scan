@@ -5,19 +5,16 @@ subst: ["&&& △","*** ×","||| ▽","+++ +","|- ⊢","<~ ⤺","k (↝)","op (�
 
 ## To do
 
-*   Some applications:
-    *   Polynomial evaluation
-    *   Parallel multi-bit adders
 *   Relation to known parallel scan algorithms.
     I think Sklansky did top-down and Ladner & Fischer did bottom-up.
 *   Scan complexity for `Bush`.
-*   Conclusions
 *   Statistics summary
 *   Complexity --- Master Theorem
 *   Future work:
     *   Finish complexity analysis (bushes)
     *   Derive each instance from the `Traversable`-based specification.
     *   `Monoid` vs `Semigroup`, e.g., `Max` with `RPow`, `LPow`, `Bush`, and non-empty left- and right-vectors.
+
 
 ## Or not
 
@@ -38,6 +35,10 @@ subst: ["&&& △","*** ×","||| ▽","+++ +","|- ⊢","<~ ⤺","k (↝)","op (�
 
 ## Done
 
+*   Conclusions
+*   Some applications:
+    *   Polynomial evaluation
+    *   Parallel multi-bit adders
 *   Larger tree examples
 *   Move supporting code to a new Stack project under this directory.
 *   Update abstract in [the README](README.md) and [meetup announcement](https://www.meetup.com/haskellhackers/events/234242974/).

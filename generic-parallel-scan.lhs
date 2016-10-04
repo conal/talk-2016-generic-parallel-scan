@@ -9,47 +9,6 @@
 
 % \setbeameroption{show notes} % un-comment to see the notes
 
-\usefonttheme{serif}
-\usepackage{framed}
-
-\usepackage{hyperref}
-\usepackage{color}
-
-\definecolor{linkColor}{rgb}{0,0.42,0.3}
-\definecolor{partColor}{rgb}{0,0,0.8}
-
-\hypersetup{colorlinks=true,urlcolor=linkColor}
-
-\usepackage{graphicx}
-\usepackage{color}
-\DeclareGraphicsExtensions{.pdf,.png,.jpg}
-
-\usepackage{geometry}
-% \usepackage[a4paper]{geometry}
-
-%% \usepackage{wasysym}
-\usepackage{mathabx}
-\usepackage{setspace}
-\usepackage{enumerate}
-\usepackage{tikzsymbols}
-% \usepackage{fancybox}
-\usepackage[many]{tcolorbox}
-
-\tcbset{enhanced,boxrule=0.5pt,colframe=black!50!blue,colback=white,boxsep=-2pt,drop fuzzy shadow}
-
-\usepackage[absolute,overlay]{textpos}  % ,showboxes
-
-\TPGrid{364}{273} %% roughly page size in points
-
-\useinnertheme[shadow]{rounded}
-% \useoutertheme{default}
-\useoutertheme{shadow}
-\useoutertheme{infolines}
-% Suppress navigation arrows
-\setbeamertemplate{navigation symbols}{}
-
-\newcommand\sourced[1]{\href{#1}{\tiny (source)}}
-
 \input{macros}
 
 %include polycode.fmt
@@ -57,53 +16,12 @@
 %include greek.fmt
 %include mine.fmt
 
-\definecolor{statColor}{rgb}{0,0.5,0}
-
-\newcommand{\stats}[2]{
-{\small \textcolor{statColor}{work: #1, depth: #2}}}
-
-\newcommand\ccircuit[3]{
-\framet{#1}{
-\vspace{#2ex}
-\wfig{4.5in}{circuits/#3}
-}}
-
-\newcommand\circuit[5]{
-\ccircuit{#1 \hfill \stats {#4}{#5}\hspace{2ex}}{#2}{#3}
-}
-
-\DeclareMathOperator{\D}{Depth}
-\DeclareMathOperator{\W}{Work}
-\nc\Size[1]{\lvert #1 \rvert}
-
 \title{Generic parallel scan}
-\author{\href{http://conal.net}{Conal Elliott}}
-\institute{Target}
 \date{October 5, 2016}
 % \date{\emph{[\today]}}
 
-\setlength{\itemsep}{2ex}
-\setlength{\parskip}{1ex}
 \setlength{\blanklineskip}{1.5ex}
 \setlength\mathindent{4ex}
-% \setstretch{1.2} % ??
-
-\graphicspath{{Figures/}}
-
-\definecolor{shadecolor}{rgb}{0.95,0.95,0.95}
-\setlength{\fboxsep}{0.75ex}
-\setlength{\fboxrule}{0.15pt}
-%% \setlength{\shadowsize}{2pt}
-
-%% \nc\cbox[1]{\raisebox{-0.5\height}{\fbox{#1}}}
-\nc\cpic[2]{\fbox{\wpicture{#1}{circuits/#2}}}
-\nc\ccap[3]{
-\begin{minipage}[c]{0.48\textwidth}
-\begin{center}
-\cpic{#2}{#3}\par\vspace{0.5ex}#1\par
-\end{center}
-\end{minipage}
-}
 
 \begin{document}
 
@@ -128,7 +46,7 @@ Note that $a_k$ does \emph{not} influence $b_k$.
 From a longer list in \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.128.6230}{\emph{Prefix
 Sums and Their Applications}}:
 \vspace{0.5ex}
-\begin{itemize}\itemsep2ex
+\begin{itemize}\itemsep3ex
 %% \item Lexical ordering
 \item Adding multi-precision numbers
 \item Polynomial evaluation
@@ -234,10 +152,10 @@ instance LScan Par1  where lscan (Par1 a) = (Par1 mempty, a)
 \pause
 \begin{code}
 instance (LScan f, LScan g) => LScan (f :+: g) where
-  lscan (L1  fa  ) = L1  (lscan fa  )
-  lscan (R1  ga  ) = R1  (lscan ga  )
+  lscan (L1  fa  ) = first L1  (lscan fa  )
+  lscan (R1  ga  ) = first R1  (lscan ga  )
 \end{code}
-%if False
+%if analysis
 Analysis:
 \begin{align*}
 \W (f \pmb{+} g) &= \max (\W f, \W g)\\
@@ -278,11 +196,11 @@ instance (LScan f, LScan g) => LScan (f :*: g) where
      (ga'  , gx)  = lscan ga
 \end{code}
 
-%if False
+%if analysis
 Analysis:
 \begin{align*}
 \W (f \pmb{\times} g) & = \W(f) + \W(g) + \Size g + 1 \\
-\D (f \pmb{\times} g) &= \max (\D(f), \D(g) + 1)
+\D (f \pmb{\times} g) &= \max (\D(f), \D(g)) + 1
 \end{align*}
 %endif
 }
@@ -295,11 +213,6 @@ data RVec NOP :: Nat -> * -> * SPC where
 \end{code}
 \pause\vspace{-4ex}
 \begin{code}
-instance                    LScan (RVec Z)
-instance LScan (RVec n) =>  LScan (RVec (S n))
-\end{code}
-\pause\vspace{-4ex}
-\begin{code}
 instance Generic1 (RVec Z) where
   type Rep1 (RVec Z) = U1
   from1 ZVec = U1
@@ -309,7 +222,11 @@ instance Generic1 (RVec (S n)) where
   type Rep1 (RVec (S n)) = Par1 :*: RVec n
   from1 (a :< as) = Par1 a :*: as
   to1 (Par1 a :*: as) = a :< as
-
+\end{code}
+\pause\vspace{-4ex}
+\begin{code}
+instance                    LScan (RVec Z)
+instance LScan (RVec n) =>  LScan (RVec (S n))
 \end{code}
 
 \vspace{1ex}
@@ -347,6 +264,8 @@ type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
 
 \circuit{|LVec N8| (unoptimized)}{0}{lsums-lv8-no-hash-no-opt}{16}{8}
 \circuit{|LVec N8| (optimized)}{0}{lsums-lv8}{7}{7}
+
+\circuit{|LVec N16| (optimized)}{0}{lsums-lv16}{15}{15}
 
 \circuit{|LVec N5 :*: LVec N11|}{0}{lsums-lv5xlv11}{25}{11}
 \circuit{$5+11$}{0}{lsums-lv5xlv11}{25}{11}
@@ -395,11 +314,11 @@ instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
      (tots',tot)   = lscan tots
      adjustl t     = fmap (t <>)
 \end{code}
-%if False
+%if analysis
 Analysis:
 \begin{align*}
 \W (g \pmb{\circ} f) &= \Size g \times \W(f) + \W(g) + \Size g \times \Size f\\
-\D (g \pmb{\circ} f) &= \Size g \times \D(f) + \D(g) + \Size g \times \Size f
+\D (g \pmb{\circ} f) &= \D(f) + \D(g)
 \end{align*}
 %endif
 }
