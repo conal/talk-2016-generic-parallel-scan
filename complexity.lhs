@@ -154,7 +154,7 @@ Depth (LVec n)      = O(n)
 \end{code}
 }
 
-\framet{Right-associated trees}{
+\newcommand{\upperRPow}{
 \begin{textblock}{180}[1,0](350,5)
 \setlength\mathindent{0ex}
 \begin{tcolorbox}
@@ -167,6 +167,9 @@ type family RPow h n where
 \vspace{-3.5ex}
 \end{tcolorbox}
 \end{textblock}
+}
+
+\framet{Right-associated trees}{\upperRPow
 \vspace{6ex}
 \small \setlength\mathindent{0.5ex}
 \begin{code}
@@ -186,7 +189,7 @@ Depth (RPow h n)      = O (n)
 \end{code}
 }
 
-\framet{Left-associated trees}{
+\newcommand{\upperLPow}{
 \begin{textblock}{180}[1,0](350,5)
 \setlength\mathindent{0ex}
 \begin{tcolorbox}
@@ -199,6 +202,9 @@ type family LPow h n where
 \vspace{-3.5ex}
 \end{tcolorbox}
 \end{textblock}
+}
+
+\framet{Left-associated trees}{\upperLPow
 \vspace{6ex}
 \small \setlength\mathindent{0.5ex}
 \begin{code}
@@ -253,23 +259,20 @@ Depth (Bush n)      = pow 2 n
 \partframe{FFT}
 
 \framet{Composition}{
-\wfig{3.25in}{cooley-tukey-general}
+\wfig{4in}{cooley-tukey-general}
 \begin{center}
 \vspace{-5ex}
 \sourced{https://en.wikipedia.org/wiki/Cooley\%E2\%80\%93Tukey_FFT_algorithm\#General_factorizations}
 \end{center}
 }
 
-\newcommand{\upperCT}{
-\begin{textblock}{153}[1,0](353,7)
+\framet{Composition}{
+\begin{textblock}{180}[1,0](353,7)
 \begin{tcolorbox}
-\wpicture{1.9in}{cooley-tukey-general}
+\wpicture{2.2in}{cooley-tukey-general}
 \end{tcolorbox}
 \end{textblock}
-}
-
-\framet{Composition}{\upperCT
-\vspace{12ex}
+\vspace{18ex}
 \begin{code}
 Work   (g :.: f)  = Size f * Work g + Size g * Size f + Size g * Work f
 
@@ -278,8 +281,8 @@ Depth  (g :.: f)  = Depth g + 1 + Depth f
 }
 
 
-\framet{Right-associated trees}{\upperCT
-\vspace{12ex}
+\framet{Right-associated trees}{\upperRPow
+\vspace{8ex}
 \begin{code}
 Work (RPow h Z)      = 0
 Work (RPow h (S n))  = Work (h :.: RPow h n)
@@ -291,8 +294,8 @@ Work (RPow h n)      = O (Size (RPow h n) * log (Size (RPow h n)))
 \end{code}
 }
 
-\framet{Left-associated trees}{\upperCT
-\vspace{12ex}
+\framet{Left-associated trees}{\upperLPow
+\vspace{8ex}
 \begin{code}
 Work (LPow h Z)      = 0
 Work (LPow h (S n))  = Work (LPow h n :.: h)
