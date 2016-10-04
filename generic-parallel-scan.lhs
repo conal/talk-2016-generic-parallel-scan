@@ -1,6 +1,6 @@
 %% -*- latex -*-
 
-%let analysis = True
+%% %let analysis = True
 
 % Presentation
 %\documentclass[aspectratio=1610]{beamer} % Macbook Pro screen 16:10
@@ -557,7 +557,7 @@ instance Monoid PropGen where
 
 \framet{Generic parallel scan}{
 
-\begin{itemize}\itemsep2.5ex \setlength{\parskip}{1ex}
+\begin{itemize}\itemsep2ex \setlength{\parskip}{1ex}
 \item Parallel scan: useful for many parallel algorithms.
 \item Generic programming:
   \begin{itemize}\itemsep2ex
@@ -573,6 +573,7 @@ instance Monoid PropGen where
   \item Top-down \& bottom-up trees
         %% . Depth $O(\log n)$; work $O(n \log n)$ / $O(n)$.
   \item Bushes
+  \item No arrays!
 \end{itemize}
 %if False
 \item Future work:
