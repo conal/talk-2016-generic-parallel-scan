@@ -187,7 +187,7 @@ Analysis:
 }
 
 \framet{Products}{\upperExample
-\pause\vspace{13ex}
+\pause\vspace{17ex}
 \begin{code}
 instance (LScan f, LScan g) => LScan (f :*: g) where
   lscan (fa :*: ga) = (fa' :*: ((fx <> NOP) <#> ga'), fx <> gx)
@@ -207,9 +207,9 @@ Analysis:
 
 \framet{Vector GADT}{\pause
 \begin{code}
-data RVec NOP :: Nat -> * -> * SPC where
-  ZVec  ::                   RVec Z a 
-  (:<)  :: a -> RVec n a ->  RVec (S n) a
+data RVec NOP :: Nat -> STAR -> STAR SPC where
+  ZVec  ::                   RVec Z      a
+  (:<)  :: a -> RVec n a ->  RVec (S n)  a
 \end{code}
 \pause\vspace{-4ex}
 \begin{code}
@@ -229,7 +229,7 @@ instance                    LScan (RVec Z)
 instance LScan (RVec n) =>  LScan (RVec (S n))
 \end{code}
 
-\vspace{1ex}
+\pause\vspace{1ex}
 Plus |Functor|, |Applicative|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
 }
 
@@ -305,7 +305,7 @@ type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
 }
 
 \framet{Composition}{\upperExample
-\pause\vspace{13ex}
+\pause\vspace{16ex}
 \begin{code}
 instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
   lscan (Comp1 gfa) = (Comp1 (zipWith adjustl tots' gfa'), tot)
@@ -331,18 +331,18 @@ Analysis:
 
 \framet{Exponentiation as GADTs}{
 
-Top-down, depth-typed, perfect, leaf trees
+Top-down, depth-indexed, perfect, leaf trees
 \begin{code}
-data RPow :: (* -> *) -> Nat -> * -> * NOP where
+data RPow :: (STAR -> STAR) -> Nat -> STAR -> STAR where
   L :: a               -> RPow h Z      a
   B :: h (RPow h n a)  -> RPow h (S n)  a
 \end{code}
 
 \pause\vspace{3ex}
 
-Bottom-up, depth-typed, perfect, leaf trees:
+Bottom-up, depth-indexed, perfect, leaf trees:
 \begin{code}
-data LPow :: (* -> *) -> Nat -> * -> * NOP where
+data LPow :: (STAR -> STAR) -> Nat -> STAR -> STAR where
   L  :: a               -> LPow h Z      a
   B  :: LPow h n (h a)  -> LPow h (S n)  a
 \end{code}
@@ -522,8 +522,8 @@ u <.> v = sum (zipWith (*) u v)
 \end{code}
 }
 
-\circuit{|(<.>) @(RBin N4)|}{-0.5}{dot-rb4}{17+16}{6}
-\circuit{|evalPoly @(RBin N4)|}{0}{evalPoly-rb4}{31+16}{10}
+\circuit{|(<.>) @(RBin N4)|}{-0.5}{dot-rb4}{16+15}{5}
+\circuit{|evalPoly @(RBin N4)|}{0}{evalPoly-rb4}{29+15}{9}
 
 \framet{Addition}{
 \pause

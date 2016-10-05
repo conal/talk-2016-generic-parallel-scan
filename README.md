@@ -19,7 +19,7 @@ While coming to similar conclusions, the new presentation is almost entirely dif
 *   Generic programming takes center stage throughout.
 *   Shape-indexed data types (vectors, trees, bushes).
 *   Dropped the CUDA comparison.
-*   Postponed complexity analysis to another talk (unless there's time & interest).
+*   Postponed complexity analysis to another talk unless there's time & interest.
 
 [*Generic FFT*]: https://github.com/conal/talk-2016-generic-fft "talk by Conal Elliott (2016)"
 

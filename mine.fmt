@@ -53,16 +53,19 @@
 
 %% Why not just ... = Vec "_{"n"}", etc?
 
-%format Vec (n) = Vec"_{"n"}"
-%format LVec (n) = LVec"_{"n"}"
-%format RVec (n) = RVec"_{"n"}"
+%% %format Vec (n) = Vec"_{"n"}"
+%% %format LVec (n) = LVec"_{"n"}"
+%% %format RVec (n) = RVec"_{"n"}"
 %% %format RBin (n) = RBin"_{"n"}"
 %% %format LBin (n) = LBin"_{"n"}"
 
-%% Otherwise "type family Vec n" shows as "type family Vec. n".
-%format  Vec_n =  Vec"_n"
-%format LVec_n = LVec"_n"
-%format RVec_n = RVec"_n"
+%% %% Otherwise "type family Vec n" shows as "type family Vec. n".
+%% %format  Vec_n =  Vec"_n"
+%% %format LVec_n = LVec"_n"
+%% %format RVec_n = RVec"_n"
+%format  Vec_n =  Vec "\;"n
+%format LVec_n = LVec "\;"n
+%format RVec_n = RVec "\;"n
 
 %format V1
 %format U1
@@ -143,9 +146,14 @@
 %format * = "\times"
 %format ==> = "\therefore"
 
+%% %format STAR = *
+%format STAR = "\mathbin{*}"
+
 %% %format a ^ (n) = a"^{"n"}"
 
 %format pow a (n) = a"^{"n"}"
+
+%format log2 = log"_2"
 
 %format Work = W
 %format Depth = D

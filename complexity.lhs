@@ -95,8 +95,8 @@ Depth  (g:.: f) = Depth(f) + Depth(g)
 }
 
 \framet{Right-associated vectors}{
-\begin{textblock}{157}[1,0](350,5)
-\setlength\mathindent{0.5ex}
+\begin{textblock}{167}[1,0](350,5)
+\setlength\mathindent{0ex}
 \begin{tcolorbox}
 \vspace{-1ex}
 \begin{code}
@@ -125,8 +125,8 @@ Depth (RVec n)      = O(n)
 }
 
 \framet{Left-associated vectors}{
-\begin{textblock}{157}[1,0](350,5)
-\setlength\mathindent{0.5ex}
+\begin{textblock}{167}[1,0](350,5)
+\setlength\mathindent{0ex}
 \begin{tcolorbox}
 \vspace{-1ex}
 \begin{code}
@@ -252,7 +252,7 @@ Depth (Bush (S n))  = Depth (Bush n) + Depth (Bush n)
                     = 2 * Depth (Bush n)
                     ==>
 Depth (Bush n)      = pow 2 n
-                    = log (Size (Bush n))
+                    = log2 (Size (Bush n))
 \end{code}
 }
 
