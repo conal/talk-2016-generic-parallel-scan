@@ -1,7 +1,5 @@
 %% -*- latex -*-
 
-%% %let analysis = True
-
 % Presentation
 %\documentclass[aspectratio=1610]{beamer} % Macbook Pro screen 16:10
 \documentclass{beamer} % default aspect ratio 4:3
@@ -155,13 +153,6 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
   lscan (L1  fa  ) = first L1  (lscan fa  )
   lscan (R1  ga  ) = first R1  (lscan ga  )
 \end{code}
-%if analysis
-Analysis:
-\begin{align*}
-\W (f \pmb{+} g) &= \max (\W f, \W g)\\
-\D (f \pmb{+} g) &= \max (\D f, \D g)
-\end{align*}
-%endif
 }
 
 %% $a^{16} = a^5 \times a^{11}$
@@ -178,16 +169,13 @@ Analysis:
 \ccircuit{Combine?}{0}{lsums-lv5-lv11-unknown-no-hash-highlight}
 \ccircuit{Right adjust}{0}{lsums-lv5xlv11-highlight}
 
-\newcommand{\upperExample}{
-\begin{textblock}{162}[1,0](350,5)
+\framet{Products}{
+\begin{textblock}{200}[1,0](350,5)
 \begin{tcolorbox}
-\wfig{2in}{circuits/lsums-lv5xlv11-highlight}
+\wfig{2.5in}{circuits/lsums-lv5xlv11-highlight}
 \end{tcolorbox}
 \end{textblock}
-}
-
-\framet{Products}{\upperExample
-\pause\vspace{17ex}
+\pause\vspace{23ex}
 \begin{code}
 instance (LScan f, LScan g) => LScan (f :*: g) where
   lscan (fa :*: ga) = (fa' :*: ((fx <> NOP) <#> ga'), fx <> gx)
@@ -195,14 +183,6 @@ instance (LScan f, LScan g) => LScan (f :*: g) where
      (fa'  , fx)  = lscan fa
      (ga'  , gx)  = lscan ga
 \end{code}
-
-%if analysis
-Analysis:
-\begin{align*}
-\W (f \pmb{\times} g) & = \W(f) + \W(g) + \Size g + 1 \\
-\D (f \pmb{\times} g) &= \max (\D(f), \D(g)) + 1
-\end{align*}
-%endif
 }
 
 \framet{Vector GADT}{\pause
@@ -296,16 +276,13 @@ type Pair = Par1 :*: Par1   -- or |RVec N2| or |LVec N2|
 \ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7}
 \ccircuit{|LVec N5 :.: LVec N7|}{-1.5}{lsums-lv5olv7-highlight}
 
-\renewcommand{\upperExample}{
-\begin{textblock}{162}[1,0](350,5)
+\framet{Composition}{
+\begin{textblock}{200}[1,0](350,5)
 \begin{tcolorbox}
-\wfig{2in}{circuits/lsums-lv3olv4-highlight}
+\wfig{2.5in}{circuits/lsums-lv3olv4-highlight}
 \end{tcolorbox}
 \end{textblock}
-}
-
-\framet{Composition}{\upperExample
-\pause\vspace{16ex}
+\pause\vspace{24ex}
 \begin{code}
 instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
   lscan (Comp1 gfa) = (Comp1 (zipWith adjustl tots' gfa'), tot)
@@ -314,13 +291,6 @@ instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
      (tots',tot)   = lscan tots
      adjustl t     = fmap (t <>)
 \end{code}
-%if analysis
-Analysis:
-\begin{align*}
-\W (g \pmb{\circ} f) &= \Size g \times \W(f) + \W(g) + \Size g \times \Size f\\
-\D (g \pmb{\circ} f) &= \D(f) + \D(g)
-\end{align*}
-%endif
 }
 
 \circuit{|Pair :.: LVec N8|}{0}{lsums-p-lv8}{22}{8}
