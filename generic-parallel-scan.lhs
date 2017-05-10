@@ -25,21 +25,6 @@
 
 \frame{\titlepage}
 
-\framet{Prefix sum (left scan)}{
-\vspace{5ex}
-Given $a_1,\ldots,a_n$, compute
-
-\vspace{3ex}
-$$ {\Large b_k = \sum\limits_{1 \le i < k}{a_i}}\qquad\text{for~} k=1,\ldots, n+1$$
-\vspace{3ex}
-
-efficiently in work and depth (ideal parallel time).
-
-\vspace{5ex}
-
-Note that $a_k$ does \emph{not} influence $b_k$.
-}
-
 \framet{Some applications}{
 From a longer list in \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.128.6230}{\emph{Prefix
 Sums and Their Applications}}:
@@ -58,6 +43,21 @@ Sums and Their Applications}}:
 %% \item Some tree operations. For example, to find the depth of every vertex in a tree (see Chapter 3).
 %% \item To label components in two dimensional images.
 \end{itemize}
+}
+
+\framet{Prefix sum (left scan)}{
+\vspace{5ex}
+Given $a_1,\ldots,a_n$, compute
+
+\vspace{3ex}
+$$ {\Large b_k = \sum\limits_{1 \le i < k}{a_i}}\qquad\text{for~} k=1,\ldots, n+1$$
+\vspace{3ex}
+
+efficiently in work and depth (ideal parallel time).
+
+\vspace{5ex}
+
+Note that $a_k$ does \emph{not} influence $b_k$.
 }
 
 \framet{Linear left scan}{
@@ -83,7 +83,7 @@ class Functor f => LScan f where
 \end{code}
 
 \pause\vspace{10ex}
-Specification (if |Traversable|):
+Specification (if |Traversable f|):
 \begin{code}
 lscan == swap . mapAccumL (\ acc a -> (acc <> a,acc)) mempty
 \end{code}
@@ -98,12 +98,12 @@ lscan == swap . mapAccumL (\ acc a -> (acc <> a,acc)) mempty
 \vspace{2ex}
 \texttt{GHC.Generics}:
 \begin{code}
-data     V1           a                        -- lifted |Void|
-newtype  U1           a = U1                   -- lifted |()|
+data     V1           a                        -- void
+newtype  U1           a = U1                   -- unit
 newtype  Par1         a = Par1 a               -- singleton
 
-data     (f  :+:  g)  a = L1 (f a) | R1 (g a)  -- lifted |Either|
-data     (f  :*:  g)  a = f a :*: g a          -- lifted |(,)|
+data     (f  :+:  g)  a = L1 (f a) | R1 (g a)  -- sum
+data     (f  :*:  g)  a = f a :*: g a          -- product
 newtype  (g  :.:  f)  a = Comp1 (g (f a))      -- composition
 \end{code}
 
@@ -115,7 +115,7 @@ Plan:
 \begin{itemize}
 \item Define parallel scan for each.
 \item Use directly, \emph{or}
-\item automatically via (derived) |Generic1| instances.
+\item automatically via (derived) |Generic1| instances (encodings).
 \end{itemize}
 }
 
@@ -167,7 +167,7 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
 
 \ccircuit{Combine?}{0}{lsums-lv5-lv11-unknown-no-hash}
 \ccircuit{Combine?}{0}{lsums-lv5-lv11-unknown-no-hash-highlight}
-\ccircuit{Right adjust}{0}{lsums-lv5xlv11-highlight}
+\ccircuit{Right adjustment}{0}{lsums-lv5xlv11-highlight}
 
 \framet{Products}{
 \begin{textblock}{200}[1,0](350,5)
@@ -444,13 +444,13 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
 %if True
 \begin{code}
 lscanAla  ::  forall n o f. (Newtype n, o ~ O n, LScan f, Monoid n)
-          =>  (o -> n) -> f o -> f o :* o
-lscanAla _ = (fmap unpack *** unpack) . lscan . fmap (pack @n)
+          =>  f o -> f o :* o
+lscanAla = (fmap unpack *** unpack) . lscan . fmap (pack @n)
 \end{code}
 \begin{code}
-lsums      =  lscanAla Sum
-lproducts  =  lscanAla Product
-lalls      =  lscanAla All
+lsums      =  lscanAla @Sum
+lproducts  =  lscanAla @Product
+lalls      =  lscanAla @All
            ...    
 \end{code}
 %else
