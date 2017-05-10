@@ -289,7 +289,7 @@ instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
    where
      (gfa', tots)  = unzip (lscan <#> gfa)
      (tots',tot)   = lscan tots
-     adjustl t     = fmap (t <>)
+     adjustl t     = fmap (t <> NOP)
 \end{code}
 }
 
@@ -533,7 +533,7 @@ instance Monoid PropGen where
   \begin{itemize}\itemsep1.5ex
   \item Define per functor building block.
   \item Use directly, \emph{or}
-  \item \hspace{2ex} automatically via (derived) |Generic1| instances.
+  \item \hspace{2ex} automatically via (perhaps derived) |Generic1| instances.
   \item Infinite variations, easily explored and guaranteed correct.
   \end{itemize}
 \item Some convenient data structures:
