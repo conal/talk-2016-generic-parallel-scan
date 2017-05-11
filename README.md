@@ -5,6 +5,10 @@ A [talk given at the Silicon Valley Haskell meetup on October 5, 2016](https://w
 *   [Slides (PDF)](http://conal.net/talks/generic-parallel-scan.pdf)
 *   Video link will appear here.
 
+See also:
+
+*   Related talk: [Generic FFT](https://github.com/conal/talk-2016-generic-fft)
+*   The paper: [*Generic parallel functional programming: Scan and FFT*](http://conal.net/papers/generic-parallel-functional/)
 
 ## Abstract
 
