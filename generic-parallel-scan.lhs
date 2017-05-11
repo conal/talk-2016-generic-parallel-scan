@@ -15,7 +15,7 @@
 %include mine.fmt
 
 \title{Generic parallel scan}
-\date{October 5, 2016}
+\date[October 2016]{October 5, 2016 (revised May 2017)}
 % \date{\emph{[\today]}}
 
 \setlength{\blanklineskip}{1.5ex}
