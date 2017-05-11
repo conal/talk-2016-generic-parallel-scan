@@ -94,9 +94,8 @@ lscan == swap . mapAccumL (\ acc a -> (acc <> a,acc)) mempty
 %% \end{code}
 }
 
-\framet{Generic programming}{
+\framet{Generic building blocks}{
 \vspace{2ex}
-\texttt{GHC.Generics}:
 \begin{code}
 data     V1           a                        -- void
 newtype  U1           a = U1                   -- unit
@@ -115,19 +114,8 @@ Plan:
 \begin{itemize}
 \item Define parallel scan for each.
 \item Use directly, \emph{or}
-\item automatically via (derived) |Generic1| instances (encodings).
+\item \hspace{2ex}automatically via (derived) encodings.
 \end{itemize}
-}
-
-\framet{Scan class}{
-\begin{code}
-class Functor f => LScan f where
-  lscan :: Monoid a => f a -> f a :* a
-  NOP
-  default lscan  ::  (Generic1 f, LScan (Rep1 f))
-                 =>  Monoid a => f a -> f a :* a
-  lscan = first to1 . lscan . from1
-\end{code}
 }
 
 \framet{Easy instances}{
@@ -154,6 +142,8 @@ instance (LScan f, LScan g) => LScan (f :+: g) where
   lscan (R1  ga  ) = first R1  (lscan ga  )
 \end{code}
 }
+
+%format Vec = LVec
 
 %% $a^{16} = a^5 \times a^{11}$
 \framet{Product example: |Vec N5 :*: Vec N11|}{
@@ -183,34 +173,6 @@ instance (LScan f, LScan g) => LScan (f :*: g) where
      (fa'  , fx)  = lscan fa
      (ga'  , gx)  = lscan ga
 \end{code}
-}
-
-\framet{Vector GADT}{\pause
-\begin{code}
-data RVec NOP :: Nat -> STAR -> STAR SPC where
-  ZVec  ::                   RVec Z      a
-  (:<)  :: a -> RVec n a ->  RVec (S n)  a
-\end{code}
-\pause\vspace{-4ex}
-\begin{code}
-instance Generic1 (RVec Z) where
-  type Rep1 (RVec Z) = U1
-  from1 ZVec = U1
-  to1 U1 = ZVec
-
-instance Generic1 (RVec (S n)) where
-  type Rep1 (RVec (S n)) = Par1 :*: RVec n
-  from1 (a :< as) = Par1 a :*: as
-  to1 (Par1 a :*: as) = a :< as
-\end{code}
-\pause\vspace{-4ex}
-\begin{code}
-instance                    LScan (RVec Z)
-instance LScan (RVec n) =>  LScan (RVec (S n))
-\end{code}
-
-\pause\vspace{1ex}
-Plus |Functor|, |Applicative|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
 }
 
 \framet{Vector type families}{
@@ -299,29 +261,7 @@ instance (LScan g, LScan f, Zip g) =>  LScan (g :.: f) where
 \circuit{$4 \times 4$}{0}{lsums-lv4olv4}{24}{6}
 \circuit{$4^2$}{0}{lsums-lv4olv4}{24}{6}
 
-\framet{Exponentiation as GADTs}{
-
-Top-down, depth-indexed, perfect, leaf trees
-\begin{code}
-data RPow :: (STAR -> STAR) -> Nat -> STAR -> STAR where
-  L :: a               -> RPow h Z      a
-  B :: h (RPow h n a)  -> RPow h (S n)  a
-\end{code}
-
-\pause\vspace{3ex}
-
-Bottom-up, depth-indexed, perfect, leaf trees:
-\begin{code}
-data LPow :: (STAR -> STAR) -> Nat -> STAR -> STAR where
-  L  :: a               -> LPow h Z      a
-  B  :: LPow h n (h a)  -> LPow h (S n)  a
-\end{code}
-
-Plus |Generic1|, |Functor|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
-
-}
-
-\framet{Exponentiation as type families}{
+\framet{Functor exponentiation as type families}{
 \vspace{-3ex}
 \begin{center}
 \Large $f^n = \overbrace{f \circ \cdots \circ f}^{n \text{~times}}$
@@ -440,31 +380,176 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
 }
 %endif
 
-\framet{Some convenient packaging}{
-%if True
-\begin{code}
-lscanAla  ::  forall n o f. (Newtype n, o ~ O n, LScan f, Monoid n)
-          =>  f o -> f o :* o
-lscanAla = (fmap unpack *** unpack) . lscan . fmap (pack @n)
-\end{code}
-\begin{code}
-lsums      =  lscanAla @Sum
-lproducts  =  lscanAla @Product
-lalls      =  lscanAla @All
-           ...    
-\end{code}
-%else
-\begin{code}
-lscanAla  ::  forall n o f. (Newtype n, o ~ O n, LScan f, Monoid n)
-          =>  f o -> f o :* o
-lscanAla = (fmap unpack *** unpack) . lscan . fmap (pack @n)
+\framet{Generic parallel scan}{
 
+\begin{itemize}\itemsep1.5ex \setlength{\parskip}{1ex}
+\item Parallel scan: useful for many parallel algorithms.
+\item Generic programming:
+  \begin{itemize}\itemsep1.5ex
+  \item Define per functor building block.
+  \item Use directly, \emph{or}
+  \item \hspace{2ex} automatically via (perhaps derived) |Generic1| instances.
+  \item Infinite variations, easily explored and guaranteed correct.
+  \end{itemize}
+\item Some convenient data structures:
+\begin{itemize}\itemsep1.5ex
+  \item Right \& left vectors
+        %% . Depth $O(n)$; work $O(n)$ / $O(n^2)$.
+  \item Top-down \& bottom-up trees
+        %% . Depth $O(\log n)$; work $O(n \log n)$ / $O(n)$.
+  \item Bushes
+  \item No arrays!
+\end{itemize}
+%if False
+\item Future work:
+  \begin{itemize}\itemsep1.5ex
+  \item Finish complexity analysis (bushes)
+  \item Derive each instance from the |Traversable|-based specification.
+  \item |Monoid| vs |Semigroup|, e.g., |Max| with |RPow|, |LPow|, |Bush|, and non-empty left- and right-vectors.
+  \end{itemize}
+%endif
+\end{itemize}
+}
+
+\partframe{Extras}
+
+%format Type = "\ast"
+\framet{Data encodings}{
+
+From |GHC.Generics|:
+\vspace{2ex}
+
+\begin{code}
+class Generic1 f where
+  type Rep1 f :: Type -> Type
+  from1  :: f a -> Rep1 f a
+  to1    :: Rep1 f a -> f a
+\end{code}
+
+\vspace{5ex}
+
+For regular algebraic data types, say ``|... NOP deriving Generic1|''.
+
+}
+
+\framet{Scan class}{
+\begin{code}
+class Functor f => LScan f where
+  lscan :: Monoid a => f a -> f a :* a
+\end{code}
+\pause\vspace{-8ex}
+\begin{code}
+NOP
+  default lscan  ::  (Generic1 f, LScan (Rep1 f))
+                 =>  Monoid a => f a -> f a :* a
+  lscan = first to1 . lscan . from1
+\end{code}
+}
+
+\framet{Vector type families}{
+\vspace{3ex}
+Right-associated:
+\begin{code}
+type family RVec_n where
+  RVec Z      = U1
+  RVec (S n)  = Par1 :*: RVec n
+\end{code}
+
+\vspace{2ex}
+
+Left-associated:
+\begin{code}
+type family LVec_n where
+  LVec Z      = U1
+  LVec (S n)  = LVec n :*: Par1
+\end{code}
+
+\vspace{0ex}
+}
+
+\framet{Vector GADTs}{
+\begin{code}
+data RVec NOP :: Nat -> STAR -> STAR SPC where
+  ZVec  ::                   RVec Z      a
+  (:<)  :: a -> RVec n a ->  RVec (S n)  a
+
+instance Generic1 (RVec Z) where
+  type Rep1 (RVec Z) = U1
+  from1 ZVec = U1
+  to1 U1 = ZVec
+
+instance Generic1 (RVec (S n)) where
+  type Rep1 (RVec (S n)) = Par1 :*: RVec n
+  from1 (a :< as) = Par1 a :*: as
+  to1 (Par1 a :*: as) = a :< as
+
+instance                    LScan (RVec Z)
+instance LScan (RVec n) =>  LScan (RVec (S n))
+\end{code}
+
+Plus |Functor|, |Applicative|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
+}
+
+\framet{Functor exponentiation type families}{
+\vspace{-3ex}
+\begin{center}
+\Large $f^n = \overbrace{f \circ \cdots \circ f}^{n \text{~times}}$
+\end{center}
+\vspace{0ex}
+Right-associated/top-down:
+
+\begin{code}
+type family RPow h n where
+  RPow h Z      = Par1
+  RPow h (S n)  = h :.: RPow h n
+\end{code}
+
+Left-associated/bottom-up:
+\begin{code}
+type family LPow h n where
+  LPow h Z      = Par1
+  LPow h (S n)  = LPow h n :.: h
+\end{code}
+
+\ 
+}
+
+\framet{Functor exponentiation GADTs}{
+\vspace{-3ex}
+\begin{center}
+\Large $f^n = \overbrace{f \circ \cdots \circ f}^{n \text{~times}}$
+\end{center}
+
+Right-associated/top-down:
+\begin{code}
+data RPow :: (STAR -> STAR) -> Nat -> STAR -> STAR where
+  L :: a               -> RPow h Z      a
+  B :: h (RPow h n a)  -> RPow h (S n)  a
+\end{code}
+
+Left-associated/bottom-up:
+\begin{code}
+data LPow :: (STAR -> STAR) -> Nat -> STAR -> STAR where
+  L  :: a               -> LPow h Z      a
+  B  :: LPow h n (h a)  -> LPow h (S n)  a
+\end{code}
+
+Plus |Generic1|, |Functor|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
+
+}
+
+\framet{Some convenient packaging}{
+\begin{code}
+lscanAla  ::  forall n o f. (Newtype n, o ~ O n, LScan f, Monoid n)
+          =>  f o -> f o :* o
+lscanAla = (fmap unpack *** unpack) . lscan . fmap (pack @n)
+NOP
 lsums      = lscanAla @(Sum a)
 lproducts  = lscanAla @(Product a)
 lalls      = lscanAla @All
 ...
 \end{code}
-%endif
+
 \pause Some simple uses:
 \begin{code}
 multiples  = lsums      . point
@@ -503,8 +588,8 @@ data PropGen = PropGen Bool Bool
 \end{code}
 
 \begin{code}
-propGen :: Pair Bool -> PropGen
-propGen (a :# b) = PropGen (a `xor` b) (a && b)  -- half adder
+propGen :: Bool -> Bool -> PropGen
+propGen a b = PropGen (a `xor` b) (a && b)  -- half adder
 \end{code}
 
 \pause\vspace{1ex}
@@ -524,36 +609,5 @@ instance Monoid PropGen where
 \circuit{|scanAdd @(RBin N4)|}{0}{scanAdd-rb4}{128}{10}
 \circuit{|scanAdd @(LBin N4)|}{0}{scanAdd-lb4}{110}{14}
 \circuit{|scanAdd @(Bush' N2)|}{0}{scanAdd-bush2}{119}{12}
-
-\framet{Generic parallel scan}{
-
-\begin{itemize}\itemsep1.5ex \setlength{\parskip}{1ex}
-\item Parallel scan: useful for many parallel algorithms.
-\item Generic programming:
-  \begin{itemize}\itemsep1.5ex
-  \item Define per functor building block.
-  \item Use directly, \emph{or}
-  \item \hspace{2ex} automatically via (perhaps derived) |Generic1| instances.
-  \item Infinite variations, easily explored and guaranteed correct.
-  \end{itemize}
-\item Some convenient data structures:
-\begin{itemize}\itemsep1.5ex
-  \item Right \& left vectors
-        %% . Depth $O(n)$; work $O(n)$ / $O(n^2)$.
-  \item Top-down \& bottom-up trees
-        %% . Depth $O(\log n)$; work $O(n \log n)$ / $O(n)$.
-  \item Bushes
-  \item No arrays!
-\end{itemize}
-%if False
-\item Future work:
-  \begin{itemize}\itemsep1.5ex
-  \item Finish complexity analysis (bushes)
-  \item Derive each instance from the |Traversable|-based specification.
-  \item |Monoid| vs |Semigroup|, e.g., |Max| with |RPow|, |LPow|, |Bush|, and non-empty left- and right-vectors.
-  \end{itemize}
-%endif
-\end{itemize}
-}
 
 \end{document}
