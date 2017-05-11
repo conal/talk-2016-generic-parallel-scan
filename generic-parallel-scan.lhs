@@ -384,13 +384,13 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
 
 \begin{itemize}\itemsep1.5ex \setlength{\parskip}{1ex}
 \item Parallel scan: useful for many parallel algorithms.
-\item Generic programming:
-  \begin{itemize}\itemsep1.5ex
-  \item Define per functor building block.
-  \item Use directly, \emph{or}
-  \item \hspace{2ex} automatically via (perhaps derived) |Generic1| instances.
-  \item Infinite variations, easily explored and guaranteed correct.
-  \end{itemize}
+%if True
+\item Parallel programming without arrays:
+\begin{itemize}\itemsep1.5ex \setlength{\parskip}{1ex}
+\item Safety (no indexing errors).
+\item Functor shape guides algorithm shape.
+\end{itemize}
+%else
 \item Some convenient data structures:
 \begin{itemize}\itemsep1.5ex
   \item Right \& left vectors
@@ -400,6 +400,14 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
   \item Bushes
   \item No arrays!
 \end{itemize}
+%endif
+\item Generic programming:
+  \begin{itemize}\itemsep1.5ex
+  \item Define per functor building block.
+  \item Use directly, \emph{or}
+  \item \hspace{2ex} automatically via (perhaps derived) encodings.
+  \item Infinite variations, easily explored and guaranteed correct.
+  \end{itemize}
 %if False
 \item Future work:
   \begin{itemize}\itemsep1.5ex
@@ -411,10 +419,20 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
 \end{itemize}
 }
 
-\partframe{Extras}
+\framet{Extras}{
+
+\begin{itemize} \itemsep3ex
+\item \hyperlink{encodings}{Data encodings}
+\item \hyperlink{packaging}{Convenient packaging}
+\item \hyperlink{polynomial}{Application: polynomial evaluation}
+\item \hyperlink{addition}{Application: parallel addition}
+\end{itemize}
+
+}
 
 %format Type = "\ast"
 \framet{Data encodings}{
+\label{encodings}
 
 From |GHC.Generics|:
 \vspace{2ex}
@@ -539,6 +557,7 @@ Plus |Generic1|, |Functor|, |Foldable|, |Traversable|, |Monoid|, |Key|, \ldots.
 }
 
 \framet{Some convenient packaging}{
+\label{packaging}
 \begin{code}
 lscanAla  ::  forall n o f. (Newtype n, o ~ O n, LScan f, Monoid n)
           =>  f o -> f o :* o
@@ -564,6 +583,7 @@ powers     = lproducts  . point
 \circuit{|powers @(RBin N4)| --- with CSE}{-1}{powers-rb4}{15}{4}
 
 \framet{Example: polynomial evaluation}{
+\label{polynomial}
 
 \begin{code}
 evalPoly  ::  (LScan f, Foldable f, Zip f, Pointed f, Num a)
@@ -581,6 +601,7 @@ u <.> v = sum (zipWith (*) u v)
 \circuit{|evalPoly @(RBin N4)|}{0}{evalPoly-rb4}{29+15}{9}
 
 \framet{Addition}{
+\label{addition}
 \pause
 Generate and propagate carries:
 \begin{code}
