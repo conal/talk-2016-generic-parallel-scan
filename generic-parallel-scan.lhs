@@ -382,17 +382,17 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
 
 \framet{Generic parallel scan}{
 
-\begin{itemize}\itemsep1.5ex \setlength{\parskip}{1ex}
+\begin{itemize}\itemsep1ex \setlength{\parskip}{0.5ex}
 \item Parallel scan: useful for many parallel algorithms.
 %if True
 \item Parallel programming without arrays:
-\begin{itemize}\itemsep1.5ex \setlength{\parskip}{1ex}
+\begin{itemize}\itemsep1ex \setlength{\parskip}{0.5ex}
 \item Safety (no indexing errors).
 \item Functor shape guides algorithm shape.
 \end{itemize}
 %else
 \item Some convenient data structures:
-\begin{itemize}\itemsep1.5ex
+\begin{itemize}\itemsep1ex
   \item Right \& left vectors
         %% . Depth $O(n)$; work $O(n)$ / $O(n^2)$.
   \item Top-down \& bottom-up trees
@@ -402,7 +402,7 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
 \end{itemize}
 %endif
 \item Generic programming:
-  \begin{itemize}\itemsep1.5ex
+  \begin{itemize}\itemsep1ex
   \item Define per functor building block.
   \item Use directly, \emph{or}
   \item \hspace{2ex} automatically via (perhaps derived) encodings.
@@ -410,12 +410,14 @@ __global__ void prescan(float *g_odata, float *g_idata, int n) {
   \end{itemize}
 %if False
 \item Future work:
-  \begin{itemize}\itemsep1.5ex
+  \begin{itemize}\itemsep1ex
   \item Finish complexity analysis (bushes)
   \item Derive each instance from the |Traversable|-based specification.
   \item |Monoid| vs |Semigroup|, e.g., |Max| with |RPow|, |LPow|, |Bush|, and non-empty left- and right-vectors.
   \end{itemize}
 %endif
+\item Related talk: \href{https://github.com/conal/talk-2016-generic-fft}{Generic FFT}
+\item Paper: \href{http://conal.net/papers/generic-parallel-functional/}{Generic parallel functional programming}
 \end{itemize}
 }
 
