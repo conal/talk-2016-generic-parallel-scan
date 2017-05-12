@@ -1,6 +1,7 @@
 # Generic parallel scan
 
 A [talk given at the Silicon Valley Haskell meetup on October 5, 2016](https://www.meetup.com/haskellhackers/events/234242974/).
+Revised for presentation at UNSW May 12, 2017.
 
 *   [Slides (PDF)](http://conal.net/talks/generic-parallel-scan.pdf)
 *   Video link will appear here.
