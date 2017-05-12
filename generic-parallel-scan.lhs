@@ -2,8 +2,8 @@
 
 % Presentation
 %\documentclass[aspectratio=1610]{beamer} % Macbook Pro screen 16:10
-\documentclass{beamer} % default aspect ratio 4:3
-% \documentclass[handout]{beamer}
+% \documentclass{beamer} % default aspect ratio 4:3
+\documentclass[handout]{beamer}
 
 % \setbeameroption{show notes} % un-comment to see the notes
 
@@ -25,7 +25,7 @@
 
 \frame{\titlepage}
 
-\framet{Some applications}{
+\framet{Some applications of parallel scan}{
 From a longer list in \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.128.6230}{\emph{Prefix
 Sums and Their Applications}}:
 \vspace{0.5ex}
@@ -51,9 +51,9 @@ Given $a_1,\ldots,a_n$, compute
 
 \vspace{3ex}
 $$ {\Large b_k = \sum\limits_{1 \le i < k}{a_i}}\qquad\text{for~} k=1,\ldots, n+1$$
-\vspace{3ex}
 
-efficiently in work and depth (ideal parallel time).
+%% \vspace{3ex}
+%% efficiently in work and depth (ideal parallel time).
 
 \vspace{5ex}
 
